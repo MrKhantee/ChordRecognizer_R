@@ -8,7 +8,7 @@ import android.media.AudioRecord;
 public class RecordAudio {
 
     private static final String TAG = "RecordAudio";
-    private static final int VOLUME_THRESHOLD = 30000;
+    private static final int VOLUME_THRESHOLD = 28000;
 
     private AudioRecord recorder;
 
@@ -16,10 +16,8 @@ public class RecordAudio {
 
     //Constructor
     public RecordAudio(MainActivity mainActivity) {
-        int recorderState;
         recorder = new AudioRecord(AudioConfig.audioSrc, AudioConfig.frequency,
                 AudioConfig.channelConfiguration, AudioConfig.audioEncoding, AudioConfig.bufferSize);
-        recorderState = recorder.getState();
         mMainActivity =  mainActivity;
     }
     // End Constructor
@@ -41,11 +39,11 @@ public class RecordAudio {
         return false;
     }
 
-    public String[] doChordDetection() {
+    public AudioAnalysis doChordDetection() {
         short audioInput[] = new short[8000];
         recorder.startRecording();
         recorder.read(audioInput, 0, audioInput.length);
         recorder.stop();
-        return PCP.getPCP(audioInput);
+        return new ProcessAudio().detectChord(audioInput);
     }
 }

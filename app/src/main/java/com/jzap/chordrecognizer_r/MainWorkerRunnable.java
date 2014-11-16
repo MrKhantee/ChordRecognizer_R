@@ -28,6 +28,10 @@ public class MainWorkerRunnable implements Runnable {
                 } else if(message.what == DISPLAY_RESULTS) {
                     //TODO : DISPLAY RESULTS
                     mMainActivity.getmRb_recording().setChecked(false);
+                    mMainActivity.getmTv_chord().setText(((AudioAnalysis) message.obj).getChord());
+                    mMainActivity.getmTv_mostIntenseNote().setText(((AudioAnalysis) message.obj).getMostIntenseNote());
+                    mMainActivity.getmTv_secMostIntenseNote().setText(((AudioAnalysis) message.obj).getSeconMostIntenseNote());
+                    mMainActivity.getmTv_thirdMostIntenseNote().setText(((AudioAnalysis) message.obj).getThirdMostIntenseNote());
                 }//end if/else
             }//end handleMessage()
         };//end mHandler initialization
@@ -37,14 +41,14 @@ public class MainWorkerRunnable implements Runnable {
 // Runnable Interface Implementations
     @Override
     public void run() {
-        String[] chordDetectionResults = new String[4];
+        AudioAnalysis audioAnalysis = new AudioAnalysis();
         Switch switch_autoDetect = getmMainActivity().getmSwitch_autoDetect();
         RecordAudio recordAudio = new RecordAudio(mMainActivity);
         while(true) {
             if(switch_autoDetect.isChecked() && recordAudio.volumeThresholdMet() ) {
                 mHandler.obtainMessage(DISPLAY_RECORDING_STATUS).sendToTarget();
-                chordDetectionResults = recordAudio.doChordDetection();
-                mHandler.obtainMessage(DISPLAY_RESULTS, chordDetectionResults).sendToTarget();
+                audioAnalysis = recordAudio.doChordDetection();
+                mHandler.obtainMessage(DISPLAY_RESULTS, audioAnalysis).sendToTarget();
                 try {
                     Thread.sleep(3000);
                 } catch(InterruptedException e) {
