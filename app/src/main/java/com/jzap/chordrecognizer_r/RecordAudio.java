@@ -35,7 +35,6 @@ public class RecordAudio {
             }//end for
         }//end while
         recorder.stop();
-        recorder.release();
         return false;
     }
 
@@ -45,5 +44,9 @@ public class RecordAudio {
         recorder.read(audioInput, 0, audioInput.length);
         recorder.stop();
         return new ProcessAudio().detectChord(audioInput);
+    }
+
+    public void destroyRecordAudio() {
+        recorder.release();
     }
 }

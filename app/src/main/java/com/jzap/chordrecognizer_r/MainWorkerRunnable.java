@@ -17,6 +17,8 @@ public class MainWorkerRunnable implements Runnable {
     private MainActivity mMainActivity;
     private Handler mHandler;
 
+    private boolean mEndRunnable = false;
+
     // Constructor
     public MainWorkerRunnable(MainActivity mainActivity) {
         mMainActivity = mainActivity;
@@ -26,7 +28,6 @@ public class MainWorkerRunnable implements Runnable {
                 if(message.what == DISPLAY_RECORDING_STATUS) {
                     mMainActivity.getmRb_recording().setChecked(true);
                 } else if(message.what == DISPLAY_RESULTS) {
-                    //TODO : DISPLAY RESULTS
                     mMainActivity.getmRb_recording().setChecked(false);
                     mMainActivity.getmTv_chord().setText(((AudioAnalysis) message.obj).getChord());
                     mMainActivity.getmTv_mostIntenseNote().setText(((AudioAnalysis) message.obj).getMostIntenseNote());
@@ -41,27 +42,32 @@ public class MainWorkerRunnable implements Runnable {
 // Runnable Interface Implementations
     @Override
     public void run() {
-        AudioAnalysis audioAnalysis = new AudioAnalysis();
+        AudioAnalysis audioAnalysis;
         Switch switch_autoDetect = getmMainActivity().getmSwitch_autoDetect();
         RecordAudio recordAudio = new RecordAudio(mMainActivity);
-        while(true) {
+        while(!mEndRunnable) {
             if(switch_autoDetect.isChecked() && recordAudio.volumeThresholdMet() ) {
                 mHandler.obtainMessage(DISPLAY_RECORDING_STATUS).sendToTarget();
                 audioAnalysis = recordAudio.doChordDetection();
                 mHandler.obtainMessage(DISPLAY_RESULTS, audioAnalysis).sendToTarget();
                 try {
-                    Thread.sleep(3000);
+                    Thread.sleep(2000);
                 } catch(InterruptedException e) {
                     e.printStackTrace();
                 }//end try/catch
             }//end if
         }//end while
+        recordAudio.destroyRecordAudio();
     }//end run()
 // End Runnable Interface Implementations
 
 // Accessors/Modifiers
     public MainActivity getmMainActivity() {
         return mMainActivity;
+    }
+
+    public void setmEndRunnable(boolean endRunnable) {
+        mEndRunnable = endRunnable;
     }
 //End Accessors/Modifiers
 }

@@ -18,6 +18,8 @@ public class MainActivity extends Activity {
     RadioButton mRb_recording;
     Switch mSwitch_autoDetect;
 
+    MainWorkerRunnable mWorkerRunnable;
+
 // Activity Overrides
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +29,7 @@ public class MainActivity extends Activity {
 
         initializeMembers();
 
-        new Thread(new MainWorkerRunnable(this)).start();
+        new Thread(mWorkerRunnable).start();
     }
 
     @Override
@@ -51,6 +53,13 @@ public class MainActivity extends Activity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG, "onDestroy() : Destroyed");
+        mWorkerRunnable.setmEndRunnable(true);
+    }
 // End Activity Overrides
 
     private void initializeMembers() {
@@ -60,6 +69,8 @@ public class MainActivity extends Activity {
         mTv_thirdMostIntenseNote = (TextView) findViewById(R.id.tv_thirdMostIntenseNote);
         mRb_recording = (RadioButton) findViewById(R.id.rb_recording);
         mSwitch_autoDetect = (Switch) findViewById(R.id.switch_autoDetect);
+
+        mWorkerRunnable = new MainWorkerRunnable(this);
     }
 
 // Accessors/Mutators
