@@ -1,6 +1,8 @@
 package com.jzap.chordrecognizer_r;
 
 import android.media.AudioRecord;
+import android.os.Handler;
+import android.util.Log;
 
 /**
  * Created by Justin on 11/15/2014.
@@ -13,15 +15,17 @@ public class RecordAudio {
     private AudioRecord recorder;
 
     private MainActivity mMainActivity;
+    private Handler mHandler;
 
     //Constructor
-    public RecordAudio(MainActivity mainActivity) {
+    public RecordAudio(MainActivity mainActivity, Handler handler) {
         recorder = new AudioRecord(AudioConfig.audioSrc, AudioConfig.frequency,
                 AudioConfig.channelConfiguration, AudioConfig.audioEncoding, AudioConfig.bufferSize);
         mMainActivity =  mainActivity;
+        mHandler = handler;
     }
     // End Constructor
-
+/*
     public boolean volumeThresholdMet() {
         short[] testAudioInput = new short[100];
         recorder.startRecording();
@@ -33,6 +37,30 @@ public class RecordAudio {
                     return true;
                 }
             }//end for
+        }//end while
+        recorder.stop();
+        return false;
+    }
+*/
+    public boolean volumeThresholdMet() {
+        // TODO : Rename to something more accurate
+        short[] testAudioInput = new short[100];
+        recorder.startRecording();
+        while(mMainActivity.getmRecording()) {
+            int greatestSample = 0;
+            recorder.read(testAudioInput, 0, testAudioInput.length);
+            for(int i = 0; i < testAudioInput.length; i++) {
+                if(testAudioInput[i] > greatestSample) {
+                    greatestSample = testAudioInput[i];
+                }
+                if(Math.abs(testAudioInput[i]) >= VOLUME_THRESHOLD) {
+                    //Log.i(TAG, String.valueOf(greatestSample));
+                    recorder.stop();
+                    return true;
+                }
+            }//end for
+            //Log.i(TAG, String.valueOf(greatestSample));
+            showVolume(greatestSample);
         }//end while
         recorder.stop();
         return false;
@@ -49,4 +77,21 @@ public class RecordAudio {
     public void destroyRecordAudio() {
         recorder.release();
     }
+
+
+    public void showVolume(int greatestSample) {
+        Integer i;
+        int quarterVolThrshld = VOLUME_THRESHOLD/4;
+        if(greatestSample < (VOLUME_THRESHOLD - quarterVolThrshld * 3)) {
+            i = new Integer(1);
+        } else if(greatestSample < VOLUME_THRESHOLD - quarterVolThrshld * 2) {
+            i = new Integer(2);
+        } else {
+            i = new Integer(3);
+        }
+        mHandler.obtainMessage(MainWorkerRunnable.DISPLAY_VOLUME_STATUS, i).sendToTarget();
+
+    }
+
+
 }
