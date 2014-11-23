@@ -1,34 +1,40 @@
 package com.jzap.chordrecognizer_r;
 
 import android.app.Activity;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.Switch;
 import android.widget.TextView;
-
+import android.view.View;
 
 public class MainActivity extends Activity {
 
     private static final String TAG = "MainActivity";
 
-    TextView mTv_chord, mTv_mostIntenseNote, mTv_secMostIntenseNote, mTv_thirdMostIntenseNote;
-    RadioButton mRb_recording;
-    Switch mSwitch_autoDetect;
+    private TextView mTv_chord, mTv_mostIntenseNote, mTv_secMostIntenseNote, mTv_thirdMostIntenseNote;
+    private ImageView mIv_button;
+    private Drawable mDr_button, mDr_readyButton;
 
-    MainWorkerRunnable mWorkerRunnable;
+    private boolean mRecording;
+
+    private MainWorkerRunnable mWorkerRunnable;
 
 // Activity Overrides
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
         initializeMembers();
-
         new Thread(mWorkerRunnable).start();
     }
 
@@ -55,9 +61,10 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.i(TAG, "onDestroy() : Destroyed");
+    protected void onStop() {
+        super.onStop();
+        Log.i(TAG, "onStop() : Stopped");
+        resetButton();
         mWorkerRunnable.setmEndRunnable(true);
     }
 // End Activity Overrides
@@ -67,10 +74,18 @@ public class MainActivity extends Activity {
         mTv_mostIntenseNote = (TextView) findViewById(R.id.tv_mostIntenseNote);
         mTv_secMostIntenseNote = (TextView) findViewById(R.id.tv_secMostIntenseNote);
         mTv_thirdMostIntenseNote = (TextView) findViewById(R.id.tv_thirdMostIntenseNote);
-        mRb_recording = (RadioButton) findViewById(R.id.rb_recording);
-        mSwitch_autoDetect = (Switch) findViewById(R.id.switch_autoDetect);
+        mIv_button = (ImageView) findViewById(R.id.button);
+        mDr_button = getResources().getDrawable(R.drawable.button);
+        mDr_readyButton = getResources().getDrawable(R.drawable.readybutton);
+
+        mRecording = false;
 
         mWorkerRunnable = new MainWorkerRunnable(this);
+    }
+
+    private void resetButton() {
+        mIv_button.setImageDrawable(mDr_button);
+        mRecording = false;
     }
 
 // Accessors/Mutators
@@ -90,12 +105,22 @@ public class MainActivity extends Activity {
         return mTv_thirdMostIntenseNote;
     }
 
-    public RadioButton getmRb_recording() {
-        return mRb_recording;
+    public ImageView getmIv_button() {
+        return mIv_button;
     }
 
-    public Switch getmSwitch_autoDetect() {
-        return mSwitch_autoDetect;
+    public void setmRecording(View v) {
+        mRecording = !mRecording;
+
+        if (mRecording) {
+            mIv_button.setImageDrawable(mDr_readyButton);
+        } else {
+            mIv_button.setImageDrawable(mDr_button);
+        }
+    }
+
+    public boolean getmRecording() {
+        return mRecording;
     }
 // End Accessors/Mutators
 

@@ -4,35 +4,14 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity"
-    android:background="#FFBB33">
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Auto Detect"
-        android:id="@+id/switch_autoDetect"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="65dp"
-        android:checked="false" />
-
-    <RadioButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Recording"
-        android:id="@+id/rb_recording"
-        android:layout_above="@+id/switch_autoDetect"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="56dp"
-        android:checked="false" />
+    android:background="#c2c2c2">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Chord..."
+        android:text="1"
         android:id="@+id/tv_chord"
-        android:layout_marginTop="45dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 
@@ -40,31 +19,42 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Second Most Intense Note..."
+        android:text="2"
         android:id="@+id/tv_secMostIntenseNote"
         android:layout_below="@+id/tv_mostIntenseNote"
-        android:layout_alignRight="@+id/switch_autoDetect"
-        android:layout_alignEnd="@+id/switch_autoDetect" />
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Most Intense Note..."
+        android:text="3"
         android:id="@+id/tv_mostIntenseNote"
-        android:layout_marginTop="115dp"
         android:layout_below="@+id/tv_chord"
-        android:layout_alignLeft="@+id/tv_secMostIntenseNote"
-        android:layout_alignStart="@+id/tv_secMostIntenseNote" />
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Third Most Intense Note..."
+        android:text="4"
         android:id="@+id/tv_thirdMostIntenseNote"
         android:layout_below="@+id/tv_secMostIntenseNote"
         android:layout_alignLeft="@+id/tv_secMostIntenseNote"
         android:layout_alignStart="@+id/tv_secMostIntenseNote" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/button"
+        android:src="@drawable/button"
+        android:layout_toStartOf="@+id/tv_chord"
+        android:onClick="setmRecording"
+        android:contentDescription="button"
+        android:layout_below="@+id/tv_thirdMostIntenseNote"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
 </RelativeLayout>

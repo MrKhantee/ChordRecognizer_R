@@ -1,5 +1,6 @@
 package com.jzap.chordrecognizer_r;
 
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -25,10 +26,15 @@ public class MainWorkerRunnable implements Runnable {
         mHandler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message message) {
+
+                Drawable drButton = mMainActivity.getResources().getDrawable(R.drawable.lightbutton);
+                Drawable drReadyButton = mMainActivity.getResources().getDrawable(R.drawable.readybutton);
+
                 if(message.what == DISPLAY_RECORDING_STATUS) {
-                    mMainActivity.getmRb_recording().setChecked(true);
+                    // TODO : Break out into methods
+                    mMainActivity.getmIv_button().setImageDrawable(drButton);
                 } else if(message.what == DISPLAY_RESULTS) {
-                    mMainActivity.getmRb_recording().setChecked(false);
+                    mMainActivity.getmIv_button().setImageDrawable(drReadyButton);
                     mMainActivity.getmTv_chord().setText(((AudioAnalysis) message.obj).getChord());
                     mMainActivity.getmTv_mostIntenseNote().setText(((AudioAnalysis) message.obj).getMostIntenseNote());
                     mMainActivity.getmTv_secMostIntenseNote().setText(((AudioAnalysis) message.obj).getSeconMostIntenseNote());
@@ -43,15 +49,14 @@ public class MainWorkerRunnable implements Runnable {
     @Override
     public void run() {
         AudioAnalysis audioAnalysis;
-        Switch switch_autoDetect = getmMainActivity().getmSwitch_autoDetect();
         RecordAudio recordAudio = new RecordAudio(mMainActivity);
         while(!mEndRunnable) {
-            if(switch_autoDetect.isChecked() && recordAudio.volumeThresholdMet() ) {
+            if(mMainActivity.getmRecording() && recordAudio.volumeThresholdMet() ) {
                 mHandler.obtainMessage(DISPLAY_RECORDING_STATUS).sendToTarget();
                 audioAnalysis = recordAudio.doChordDetection();
                 mHandler.obtainMessage(DISPLAY_RESULTS, audioAnalysis).sendToTarget();
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(200);
                 } catch(InterruptedException e) {
                     e.printStackTrace();
                 }//end try/catch

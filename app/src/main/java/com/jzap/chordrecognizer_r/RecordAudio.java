@@ -25,7 +25,7 @@ public class RecordAudio {
     public boolean volumeThresholdMet() {
         short[] testAudioInput = new short[100];
         recorder.startRecording();
-        while(mMainActivity.getmSwitch_autoDetect().isChecked()) {
+        while(mMainActivity.getmRecording()) {
             recorder.read(testAudioInput, 0, testAudioInput.length);
             for(int i = 0; i < testAudioInput.length; i++) {
                 if(Math.abs(testAudioInput[i]) >= VOLUME_THRESHOLD) {
@@ -39,7 +39,7 @@ public class RecordAudio {
     }
 
     public AudioAnalysis doChordDetection() {
-        short audioInput[] = new short[8000];
+        short audioInput[] = new short[32000];
         recorder.startRecording();
         recorder.read(audioInput, 0, audioInput.length);
         recorder.stop();
