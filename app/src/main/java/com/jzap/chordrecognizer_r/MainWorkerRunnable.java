@@ -16,6 +16,7 @@ public class MainWorkerRunnable implements Runnable {
     private static final int DISPLAY_RECORDING_STATUS = 1;
     private static final int DISPLAY_RESULTS = 2;
     public static final int DISPLAY_VOLUME_STATUS = 3;
+    public static final int DISPLAY_BUTTON_OFF = 4;
 
     private MainActivity mMainActivity;
     private Handler mHandler;
@@ -30,6 +31,7 @@ public class MainWorkerRunnable implements Runnable {
             public void handleMessage(Message message) {
 
                 // TODO : Look into not creating this for every message
+                Drawable drDormantButton = mMainActivity.getResources().getDrawable(R.drawable.button);
                 Drawable drButton = mMainActivity.getResources().getDrawable(R.drawable.lightbutton);
                 Drawable drReadyButton = mMainActivity.getResources().getDrawable(R.drawable.readybutton);
                 Drawable drOneQuarterButton = mMainActivity.getResources().getDrawable(R.drawable.onequarterlight);
@@ -37,10 +39,10 @@ public class MainWorkerRunnable implements Runnable {
                 Drawable drThreeQuarterButton = mMainActivity.getResources().getDrawable(R.drawable.threequarterlight);
 
                 if(message.what == DISPLAY_RECORDING_STATUS) {
-                    // TODO : Break out content of each conditoinal into methods
+                    // TODO : Break out content of each conditional into methods
                     mMainActivity.getmIv_button().setImageDrawable(drButton);
                 } else if(message.what == DISPLAY_RESULTS) {
-                    mMainActivity.getmIv_button().setImageDrawable(drReadyButton);
+                    //mMainActivity.getmIv_button().setImageDrawable(drReadyButton);
                     mMainActivity.getmTv_chord().setText(((AudioAnalysis) message.obj).getChord());
                     mMainActivity.getmTv_mostIntenseNote().setText(((AudioAnalysis) message.obj).getMostIntenseNote());
                     mMainActivity.getmTv_secMostIntenseNote().setText(((AudioAnalysis) message.obj).getSeconMostIntenseNote());
@@ -49,6 +51,9 @@ public class MainWorkerRunnable implements Runnable {
                     int i = (Integer) message.obj;
                     //Log.d(TAG, String.valueOf(i));
                     switch(i) {
+                        case 0 : mMainActivity.getmIv_button().setImageDrawable(drReadyButton);
+                           // Log.i(TAG, "Set Image View to Ready button");
+                            break;
                         case 1 : mMainActivity.getmIv_button().setImageDrawable(drOneQuarterButton);
                             break;
                         case 2 : mMainActivity.getmIv_button().setImageDrawable(drTwoQuarterButton);
@@ -58,6 +63,9 @@ public class MainWorkerRunnable implements Runnable {
                         default :
                             //Log.d(TAG, "Error with incoming Integer to handler : " + i);
                     }
+                } else if(message.what == DISPLAY_BUTTON_OFF) {
+                    Log.i(TAG, "************ Set Image View to Button ***********");
+                    mMainActivity.getmIv_button().setImageDrawable(drDormantButton);
                 }//end if/else
             }//end handleMessage()
         };//end mHandler initialization
@@ -75,7 +83,7 @@ public class MainWorkerRunnable implements Runnable {
                 audioAnalysis = recordAudio.doChordDetection();
                 mHandler.obtainMessage(DISPLAY_RESULTS, audioAnalysis).sendToTarget();
                 try {
-                    Thread.sleep(200);
+                    Thread.sleep(1000);
                 } catch(InterruptedException e) {
                     e.printStackTrace();
                 }//end try/catch

@@ -113,8 +113,10 @@ public class MainActivity extends Activity {
         mRecording = !mRecording;
 
         if (mRecording) {
+            Log.i(TAG, "mRecording");
             mIv_button.setImageDrawable(mDr_readyButton);
         } else {
+            Log.i(TAG, "!mRecording");
             mIv_button.setImageDrawable(mDr_button);
         }
     }

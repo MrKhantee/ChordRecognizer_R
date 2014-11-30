@@ -62,6 +62,8 @@ public class RecordAudio {
             //Log.i(TAG, String.valueOf(greatestSample));
             showVolume(greatestSample);
         }//end while
+        // TODO : Fix this hack to reset button
+        showVolume(-1);
         recorder.stop();
         return false;
     }
@@ -82,7 +84,15 @@ public class RecordAudio {
     public void showVolume(int greatestSample) {
         Integer i;
         int quarterVolThrshld = VOLUME_THRESHOLD/4;
-        if(greatestSample < (VOLUME_THRESHOLD - quarterVolThrshld * 3)) {
+
+        if(greatestSample < 0) {
+            // TODO : This is part of the hack from above
+            Log.i(TAG, "greatestSample = -1");
+            mHandler.obtainMessage(MainWorkerRunnable.DISPLAY_BUTTON_OFF).sendToTarget();
+            return;
+        } else if((greatestSample > 0) && (greatestSample < 500)) {
+            i = new Integer(0);
+        } else if(greatestSample < (VOLUME_THRESHOLD - quarterVolThrshld * 3)) {
             i = new Integer(1);
         } else if(greatestSample < VOLUME_THRESHOLD - quarterVolThrshld * 2) {
             i = new Integer(2);
@@ -90,7 +100,6 @@ public class RecordAudio {
             i = new Integer(3);
         }
         mHandler.obtainMessage(MainWorkerRunnable.DISPLAY_VOLUME_STATUS, i).sendToTarget();
-
     }
 
 

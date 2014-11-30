@@ -4,13 +4,12 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity"
-    android:background="#c2c2c2">
+    android:background="#ffffff">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="1"
         android:id="@+id/tv_chord"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
@@ -19,7 +18,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="2"
         android:id="@+id/tv_secMostIntenseNote"
         android:layout_below="@+id/tv_mostIntenseNote"
         android:layout_centerHorizontal="true" />
@@ -28,7 +26,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="3"
         android:id="@+id/tv_mostIntenseNote"
         android:layout_below="@+id/tv_chord"
         android:layout_centerHorizontal="true" />
@@ -37,15 +34,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="4"
         android:id="@+id/tv_thirdMostIntenseNote"
         android:layout_below="@+id/tv_secMostIntenseNote"
         android:layout_alignLeft="@+id/tv_secMostIntenseNote"
         android:layout_alignStart="@+id/tv_secMostIntenseNote" />
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="100dip"
+        android:layout_height="100dip"
         android:id="@+id/button"
         android:src="@drawable/button"
         android:layout_toStartOf="@+id/tv_chord"
