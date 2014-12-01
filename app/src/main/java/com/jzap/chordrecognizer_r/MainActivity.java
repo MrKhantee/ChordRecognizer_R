@@ -1,14 +1,18 @@
 package com.jzap.chordrecognizer_r;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RadioButton;
+import android.widget.RelativeLayout;
 import android.widget.Switch;
+import android.widget.TextClock;
 import android.widget.TextView;
 import android.view.View;
 
@@ -36,6 +40,9 @@ public class MainActivity extends Activity {
         super.onResume();
         initializeMembers();
         new Thread(mWorkerRunnable).start();
+
+        makeGraph();
+
     }
 
     @Override
@@ -86,6 +93,26 @@ public class MainActivity extends Activity {
     private void resetButton() {
         mIv_button.setImageDrawable(mDr_button);
         mRecording = false;
+    }
+
+    private void makeGraph() {
+        Log.i(TAG, "makeGraph()");
+        GraphView mGv = new GraphView(this);
+        //mGv.setBackgroundColor(Color.GRAY);
+        //mGv.setVisibility(View.VISIBLE);
+        RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_main);
+        RelativeLayout.LayoutParams lP = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        lP.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        mGv.setLayoutParams(lP);
+        relativeLayout.addView(mGv);
+        //relativeLayout.invalidate();
+        if (mGv.getVisibility() == View.VISIBLE) {
+            Log.i(TAG, "mGv is visible");
+        } else {
+            Log.i(TAG, "mGv is not visible");
+        }
+        //mGv.invalidate();
+
     }
 
 // Accessors/Mutators
