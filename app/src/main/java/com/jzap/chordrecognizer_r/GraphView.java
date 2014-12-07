@@ -46,8 +46,8 @@ public class GraphView extends View {
             canvas.drawCircle(canvasPortion*i+50, (850 + rand), 20, p);
         }
 
-
-
     }
+
+
 
 }

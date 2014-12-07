@@ -97,9 +97,8 @@ public class MainActivity extends Activity {
 
     private void makeGraph() {
         Log.i(TAG, "makeGraph()");
-        GraphView mGv = new GraphView(this);
-        //mGv.setBackgroundColor(Color.GRAY);
-        //mGv.setVisibility(View.VISIBLE);
+        //GraphView mGv = new GraphView(this);
+        NotesGraphView mGv =  new NotesGraphView(this);
         RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_main);
         RelativeLayout.LayoutParams lP = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         lP.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
