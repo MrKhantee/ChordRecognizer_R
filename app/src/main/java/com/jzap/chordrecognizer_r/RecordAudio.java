@@ -58,7 +58,7 @@ public class RecordAudio {
             // TODO : This is wasteful, redesign
 
             if (count >= graphPCPInterval) {
-                new ProcessAudio(mMainActivity).detectChord(toPrimitive(cumulativeTestAudioInput));
+                new ProcessAudio(mMainActivity).detectChord(toPrimitive(cumulativeTestAudioInput), false);
                 cumulativeTestAudioInput = new ArrayList<Short>();
                 count = 0;
             }
@@ -94,7 +94,7 @@ public class RecordAudio {
         // TODO : Introduce functionality to update NotesGraphView
 
         //return new ProcessAudio().detectChord(audioInput);
-        return new ProcessAudio(mMainActivity).detectChord(audioInput);
+        return new ProcessAudio(mMainActivity).detectChord(audioInput, true);
     }
 
     public void destroyRecordAudio() {

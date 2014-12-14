@@ -18,7 +18,10 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
 
     private boolean mEndRunnable;
 
+    // TODO : Replace this with AudioAnalysis
     private double[] mPCP;
+    private AudioAnalysis mAudioAnalysis;
+
 
     SurfaceHolder mSurfaceHolder;
 
@@ -39,6 +42,10 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         mPCP = PCP;
     }
 
+    synchronized public void setmAudioAnalysis(AudioAnalysis audioAnalysis) {
+        mAudioAnalysis = audioAnalysis;
+        setmPCP(mAudioAnalysis.getPCP());
+    }
 
 // SurfaceHolder.Callback implementations
 
@@ -60,12 +67,18 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
                         Paint p = new Paint();
                         p.setStrokeWidth(10);
 
-                      //  int[] colors = {0xFF33b5e6, 0xFFaa66cd, 0xFFffbb34, 0xFF98cb00, 0xFFff4443};
-                      //  int[] colors2 = {0x1F33b5e6, 0x1Faa66cd, 0x1Fffbb34, 0x1F98cb00, 0x1Fff4443};
+                        /*
+                        int[] colors = mAudioAnalysis.getVolumeThresholdMet() ? new int[]{0xFF33b5e6, 0xFFaa66cd, 0xFFffbb34, 0xFF98cb00, 0xFFff4443} :
+                                new int[]{0xFFededed, 0xFFededed, 0xFFededed, 0xFFededed, 0xFFededed};
+                        int[] colors2 = mAudioAnalysis.getVolumeThresholdMet() ? new int[]{0x1F33b5e6, 0x1Faa66cd, 0x1Fffbb34, 0x1F98cb00, 0x1Fff4443} :
+                                new int[]{0x3Fededed, 0x3Fededed, 0x3Fededed, 0x3Fededed, 0x3Fededed};
+                        */
 
-                        int[] colors = {0xFFededed, 0xFFededed, 0xFFededed, 0xFFededed, 0xFFededed};
-                        int[] colors2 = {0x1Fededed, 0x1Fededed, 0x1Fededed, 0x1Fededed, 0x1Fededed};
+                        int[] colors = {0xFF33b5e6, 0xFFaa66cd, 0xFFffbb34, 0xFF98cb00, 0xFFff4443};
+                        int[] colors2 = {0x1F33b5e6, 0x1Faa66cd, 0x1Fffbb34, 0x1F98cb00, 0x1Fff4443};
 
+                        int[] colors3 = {0xFFededed, 0xFFededed, 0xFFededed, 0xFFededed, 0xFFededed};
+                        int[] colors4 = {0x3Fededed, 0x3Fededed, 0x3Fededed, 0x3Fededed, 0x3Fededed};
 
                         canvas = mSurfaceHolder.lockCanvas();
 
@@ -82,15 +95,27 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
                         canvas.drawColor(0, PorterDuff.Mode.CLEAR);
 
                         for (int i = 0; i < mPCP.length; i++) {
-                            p.setColor(colors[i%5]);
-                            Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
-                            canvas.drawLine(canvasPortion*i+50, (float) scalePCPElement(mPCP[i]), canvasPortion*i+50, canvasHeight, p);
-                            // canvas.drawLine(canvasPortion*i+50, 900, canvasPortion*i+50, canvasHeight, p);
-                            Log.i(TAG, "Line Drawn");
-                            p.setColor(colors2[i%5]);
-                            canvas.drawCircle(canvasPortion*i+50, (float) (scalePCPElement(mPCP[i])-50), 35, p);
-                            p.setColor(colors[i%5]);
-                            canvas.drawCircle(canvasPortion*i+50, (float) (scalePCPElement(mPCP[i])-50), 20, p);
+                            if(mAudioAnalysis.getVolumeThresholdMet() && oneOfThreeMostIntenseNotes(i)) {
+                                p.setColor(colors[i % 5]);
+                                Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
+                                canvas.drawLine(canvasPortion * i + 50, (float) scalePCPElement(mPCP[i]), canvasPortion * i + 50, canvasHeight, p);
+                                // canvas.drawLine(canvasPortion*i+50, 900, canvasPortion*i+50, canvasHeight, p);
+                                Log.i(TAG, "Line Drawn");
+                                p.setColor(colors2[i % 5]);
+                                canvas.drawCircle(canvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 35, p);
+                                p.setColor(colors[i % 5]);
+                                canvas.drawCircle(canvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 20, p);
+                            } else {
+                                p.setColor(colors3[i % 5]);
+                                Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
+                                canvas.drawLine(canvasPortion * i + 50, (float) scalePCPElement(mPCP[i]), canvasPortion * i + 50, canvasHeight, p);
+                                // canvas.drawLine(canvasPortion*i+50, 900, canvasPortion*i+50, canvasHeight, p);
+                                Log.i(TAG, "Line Drawn");
+                                p.setColor(colors4[i % 5]);
+                                canvas.drawCircle(canvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 35, p);
+                                p.setColor(colors3[i % 5]);
+                                canvas.drawCircle(canvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 20, p);
+                            }
                         }
                         mSurfaceHolder.unlockCanvasAndPost(canvas);
                         ProcessAudio.setmNewPCP(false);
@@ -132,5 +157,51 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
 
     public void setmEndRunnable(boolean endRunnable) {
         mEndRunnable = endRunnable;
+    }
+
+    private int[] indexesOfThreeMostIntenseNote() {
+        int[] indexes = new int[3];
+        indexes[0] = noteToIndex(mAudioAnalysis.getMostIntenseNote());
+        indexes[1] = noteToIndex(mAudioAnalysis.getSeconMostIntenseNote());
+        indexes[2] = noteToIndex(mAudioAnalysis.getThirdMostIntenseNote());
+        return indexes;
+    }
+
+    private boolean oneOfThreeMostIntenseNotes(int i) {
+        int[] indexes = indexesOfThreeMostIntenseNote();
+        for (int j : indexes) {
+            if(i == j) return true;
+        }
+        return false;
+    }
+
+    private int noteToIndex(String note) {
+        if(note.equalsIgnoreCase("C")) {
+            return 0;
+        } else if (note.equalsIgnoreCase("C#")) {
+            return 1;
+        } else if (note.equalsIgnoreCase("D")) {
+            return 2;
+        } else if (note.equalsIgnoreCase("D#")) {
+            return 3;
+        } else if (note.equalsIgnoreCase("E")) {
+            return 4;
+        } else if (note.equalsIgnoreCase("F")) {
+            return 5;
+        } else if (note.equalsIgnoreCase("F#")) {
+            return 6;
+        } else if (note.equalsIgnoreCase("G")) {
+            return 7;
+        } else if (note.equalsIgnoreCase("G#")) {
+            return 8;
+        } else if (note.equalsIgnoreCase("A")) {
+            return 9;
+        } else if (note.equalsIgnoreCase("A#")) {
+            return 10;
+        } else if (note.equalsIgnoreCase("B")) {
+            return 11;
+        }
+
+        return -1;
     }
 }

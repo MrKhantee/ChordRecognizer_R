@@ -10,6 +10,8 @@ public class AudioAnalysis {
     private String mostIntenseNote;
     private String seconMostIntenseNote;
     private String thirdMostIntenseNote;
+    private double[] PCP;
+    private boolean volumeThresholdMet;
 
     // Accessors/Modifiers
     public String getChord() {
@@ -24,6 +26,12 @@ public class AudioAnalysis {
     public String getThirdMostIntenseNote() {
         return thirdMostIntenseNote;
     }
+    public double[] getPCP() {
+        return PCP;
+    }
+    public boolean getVolumeThresholdMet() {
+        return volumeThresholdMet;
+    }
     public void setChord(String chord) {
         this.chord = chord;
     }
@@ -36,5 +44,12 @@ public class AudioAnalysis {
     public void setThirdMostIntenseNote(String thirdMostIntenseNote) {
         this.thirdMostIntenseNote = thirdMostIntenseNote;
     }
+    public void setPCP(double[] PCP) {
+        this.PCP = PCP;
+    }
+    public void setVolumeThresholdMet(boolean volumeThresholdMet) {
+        this.volumeThresholdMet = volumeThresholdMet;
+    }
+
     // End Accessors/Modifiers
 }
