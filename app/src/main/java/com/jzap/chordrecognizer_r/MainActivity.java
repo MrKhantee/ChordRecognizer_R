@@ -1,7 +1,6 @@
 package com.jzap.chordrecognizer_r;
 
 import android.app.Activity;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,10 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RadioButton;
 import android.widget.RelativeLayout;
-import android.widget.Switch;
-import android.widget.TextClock;
 import android.widget.TextView;
 import android.view.View;
 
@@ -23,6 +19,7 @@ public class MainActivity extends Activity {
     private TextView mTv_chord, mTv_mostIntenseNote, mTv_secMostIntenseNote, mTv_thirdMostIntenseNote;
     private ImageView mIv_button;
     private Drawable mDr_button, mDr_readyButton;
+    private NotesGraphView mNgv_graph;
 
     private boolean mRecording;
 
@@ -37,6 +34,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onResume() {
+        Log.i(TAG, "onResume() : resumed");
         super.onResume();
         initializeMembers();
         new Thread(mWorkerRunnable).start();
@@ -68,11 +66,12 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    protected void onStop() {
+    protected void onPause() {
         super.onStop();
-        Log.i(TAG, "onStop() : Stopped");
+        Log.i(TAG, "onPause() : Paused");
         resetButton();
         mWorkerRunnable.setmEndRunnable(true);
+        mNgv_graph.setmEndRunnable(true);
     }
 // End Activity Overrides
 
@@ -84,6 +83,7 @@ public class MainActivity extends Activity {
         mIv_button = (ImageView) findViewById(R.id.button);
         mDr_button = getResources().getDrawable(R.drawable.button);
         mDr_readyButton = getResources().getDrawable(R.drawable.readybutton);
+        //mNgv_graph =  new NotesGraphView(this);
 
         mRecording = false;
 
@@ -95,23 +95,15 @@ public class MainActivity extends Activity {
         mRecording = false;
     }
 
+
     private void makeGraph() {
         Log.i(TAG, "makeGraph()");
-        //GraphView mGv = new GraphView(this);
-        NotesGraphView mGv =  new NotesGraphView(this);
+        mNgv_graph =  new NotesGraphView(this);
         RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_main);
         RelativeLayout.LayoutParams lP = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         lP.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        mGv.setLayoutParams(lP);
-        relativeLayout.addView(mGv);
-        //relativeLayout.invalidate();
-        if (mGv.getVisibility() == View.VISIBLE) {
-            Log.i(TAG, "mGv is visible");
-        } else {
-            Log.i(TAG, "mGv is not visible");
-        }
-        //mGv.invalidate();
-
+        mNgv_graph.setLayoutParams(lP);
+        relativeLayout.addView(mNgv_graph);
     }
 
 // Accessors/Mutators
@@ -134,6 +126,8 @@ public class MainActivity extends Activity {
     public ImageView getmIv_button() {
         return mIv_button;
     }
+
+    public NotesGraphView getmNgv_graph() { return mNgv_graph; }
 
     public void setmRecording(View v) {
         mRecording = !mRecording;

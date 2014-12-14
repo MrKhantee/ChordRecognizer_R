@@ -1,8 +1,11 @@
 package com.jzap.chordrecognizer_r;
 
+import android.util.Log;
 import java.util.Arrays;
 
 public class ProcessPCP {
+
+    private static String TAG = "ProcessPCP";
 
     private double[] PCP;
 
@@ -10,9 +13,9 @@ public class ProcessPCP {
 	public ProcessPCP(double[] PCP){
 		this.PCP = PCP;
 		normalizeVector(PCP);
-		System.out.println("Normalized Vector Values: ");
+		Log.i(TAG, "Normalized Vector Values: ");
 		for(double d : PCP) {
-			System.out.println(d);
+			Log.i(TAG, String.valueOf(d));
 		}
 	}
     // End Constructor
@@ -21,9 +24,9 @@ public class ProcessPCP {
 		double[] scores = assignScores();
 		String chord = sort(scores);
 		
-		System.out.println("SCORES: ");
+		Log.i(TAG, "SCORES: ");
 		for(int i=0; i<numOfChords; i++) {
-			System.out.println(ChordNames[i] + ": " + scores[i]);
+			Log.i(TAG, ChordNames[i] + ": " + scores[i]);
 		}
 
 		return chord;
