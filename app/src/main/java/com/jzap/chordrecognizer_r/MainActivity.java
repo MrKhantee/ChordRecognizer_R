@@ -1,6 +1,9 @@
 package com.jzap.chordrecognizer_r;
 
 import android.app.Activity;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.LightingColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
@@ -134,9 +137,13 @@ public class MainActivity extends Activity {
 
         if (mRecording) {
             Log.i(TAG, "mRecording");
+            ColorFilter filter = new LightingColorFilter(010101, Color.RED);
+            mDr_readyButton.setColorFilter(filter);
             mIv_button.setImageDrawable(mDr_readyButton);
         } else {
             Log.i(TAG, "!mRecording");
+            ColorFilter filter = new LightingColorFilter(010101, Color.BLACK);
+            mDr_button.setColorFilter(filter);
             mIv_button.setImageDrawable(mDr_button);
         }
     }

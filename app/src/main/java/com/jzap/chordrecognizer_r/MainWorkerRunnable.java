@@ -1,5 +1,14 @@
 package com.jzap.chordrecognizer_r;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.LightingColorFilter;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
@@ -32,15 +41,52 @@ public class MainWorkerRunnable implements Runnable {
 
                 // TODO : Look into not creating this for every message
                 Drawable drDormantButton = mMainActivity.getResources().getDrawable(R.drawable.button);
-                Drawable drButton = mMainActivity.getResources().getDrawable(R.drawable.lightbutton);
+                //Drawable drButton = mMainActivity.getResources().getDrawable(R.drawable.lightbutton);
+                Drawable drButton = mMainActivity.getResources().getDrawable(R.drawable.button);
                 Drawable drReadyButton = mMainActivity.getResources().getDrawable(R.drawable.readybutton);
                 Drawable drOneQuarterButton = mMainActivity.getResources().getDrawable(R.drawable.onequarterlight);
                 Drawable drTwoQuarterButton = mMainActivity.getResources().getDrawable(R.drawable.twoquarterlight);
                 Drawable drThreeQuarterButton = mMainActivity.getResources().getDrawable(R.drawable.threequarterlight);
 
+                // Experiment 1a
+                Bitmap bmpButton = BitmapFactory.decodeResource(mMainActivity.getResources(), R.drawable.plainbutton);
+
+
+                // End Experiment 1a
+
                 if(message.what == DISPLAY_RECORDING_STATUS) {
                     // TODO : Break out content of each conditional into methods
+                    /*
+                    int chordColor = lookupChordColor(((AudioAnalysis) message.obj).getChord());
+                    ColorFilter filter = new LightingColorFilter(010101, chordColor);
+                    drButton.setColorFilter(filter);
                     mMainActivity.getmIv_button().setImageDrawable(drButton);
+                    */
+                    // Experiment 1b
+                    Bitmap bmpAfter = Bitmap.createBitmap(bmpButton.getWidth(), bmpButton.getHeight(), Bitmap.Config.ARGB_8888);
+                    Canvas canvas = new Canvas(bmpAfter);
+                    Paint paint = new Paint();
+                    int chordColor = lookupChordColor(((AudioAnalysis) message.obj).getChord());
+                    paint.setColorFilter(new LightingColorFilter(010101, chordColor));
+                    canvas.drawBitmap(bmpButton, 0, 0, paint);
+                    paint = new Paint();
+                    paint.setAntiAlias(true);
+                    paint.setTextSize(400);
+                    paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+                    int[] loc = new int[2];
+                    mMainActivity.getmIv_button().getLocationInWindow(loc);
+                    // TODO : Locate "center" dynamically
+                    canvas.drawText(((AudioAnalysis) message.obj).getChord(), loc[0] + 200, loc[1] + 700, paint);
+
+                    mMainActivity.getmIv_button().setImageBitmap(bmpAfter);
+
+
+
+
+
+
+                    // End Experiment 1b
+
                 } else if(message.what == DISPLAY_RESULTS) {
                     //mMainActivity.getmIv_button().setImageDrawable(drReadyButton);
                     mMainActivity.getmTv_chord().setText(((AudioAnalysis) message.obj).getChord());
@@ -79,9 +125,11 @@ public class MainWorkerRunnable implements Runnable {
         RecordAudio recordAudio = new RecordAudio(mMainActivity, mHandler);
         while(!mEndRunnable) {
             if(mMainActivity.getmRecording() && recordAudio.volumeThresholdMet() ) {
-                mHandler.obtainMessage(DISPLAY_RECORDING_STATUS).sendToTarget();
+                // There's a tradeoff in getting the audioAnalysis here, instead of after the next line - app seems less responsive
                 audioAnalysis = recordAudio.doChordDetection();
-                mHandler.obtainMessage(DISPLAY_RESULTS, audioAnalysis).sendToTarget();
+                mHandler.obtainMessage(DISPLAY_RECORDING_STATUS, audioAnalysis).sendToTarget();
+               // This displays the results in plain text
+               // mHandler.obtainMessage(DISPLAY_RESULTS, audioAnalysis).sendToTarget();
                 try {
                     Thread.sleep(1000);
                 } catch(InterruptedException e) {
@@ -102,4 +150,20 @@ public class MainWorkerRunnable implements Runnable {
         mEndRunnable = endRunnable;
     }
 //End Accessors/Modifiers
+
+    // TODO : Get this right
+    int lookupChordColor(String chord) {
+        if(chord.contains("C") && !chord.contains("C#") || chord.contains("A")) {
+            return NotesGraphView.colors[0];
+        } else if(chord.contains("D") || chord.contains("B")) {
+            return NotesGraphView.colors[1];
+        } else if(chord.contains("E")) {
+            return NotesGraphView.colors[2];
+        } else if(chord.contains("F")) {
+            return NotesGraphView.colors[3];
+        }else if(chord.contains("G")) {
+            return NotesGraphView.colors[4];
+        }
+        return -1;
+    }
 }

@@ -13,9 +13,9 @@ public class ProcessPCP {
 	public ProcessPCP(double[] PCP){
 		this.PCP = PCP;
 		normalizeVector(PCP);
-		Log.i(TAG, "Normalized Vector Values: ");
+		//Log.i(TAG, "Normalized Vector Values: ");
 		for(double d : PCP) {
-			Log.i(TAG, String.valueOf(d));
+			//Log.i(TAG, String.valueOf(d));
 		}
 	}
     // End Constructor
@@ -24,9 +24,9 @@ public class ProcessPCP {
 		double[] scores = assignScores();
 		String chord = sort(scores);
 		
-		Log.i(TAG, "SCORES: ");
+		//Log.i(TAG, "SCORES: ");
 		for(int i=0; i<numOfChords; i++) {
-			Log.i(TAG, ChordNames[i] + ": " + scores[i]);
+			//Log.i(TAG, ChordNames[i] + ": " + scores[i]);
 		}
 
 		return chord;

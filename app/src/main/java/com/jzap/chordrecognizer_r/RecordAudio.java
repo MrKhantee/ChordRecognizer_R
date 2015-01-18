@@ -120,7 +120,7 @@ public class RecordAudio {
         } else {
             i = new Integer(3);
         }
-        mHandler.obtainMessage(MainWorkerRunnable.DISPLAY_VOLUME_STATUS, i).sendToTarget();
+       // mHandler.obtainMessage(MainWorkerRunnable.DISPLAY_VOLUME_STATUS, i).sendToTarget();
     }
 
 

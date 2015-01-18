@@ -15,8 +15,15 @@ import android.view.SurfaceView;
 public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final String TAG = "NotesGraphView";
-
     private boolean mEndRunnable;
+
+    // TODO : Reformat these names
+
+    public static final int[] colors = {0xFF33b5e6, 0xFFaa66cd, 0xFFffbb34, 0xFF98cb00, 0xFFff4443};
+    public static final int[] colors2 = {0x1F33b5e6, 0x1Faa66cd, 0x1Fffbb34, 0x1F98cb00, 0x1Fff4443};
+
+    public static final int[] colors3 = {0xFFededed, 0xFFededed, 0xFFededed, 0xFFededed, 0xFFededed};
+    public static final int[] colors4 = {0x3Fededed, 0x3Fededed, 0x3Fededed, 0x3Fededed, 0x3Fededed};
 
     // TODO : Replace this with AudioAnalysis
     private double[] mPCP;
@@ -61,24 +68,11 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
                     // Log.i(TAG, "Running...");
                     if (ProcessAudio.getmNewPCP()) {
 
-                        Log.i(TAG, "New PCP");
+                       // Log.i(TAG, "New PCP");
                         Canvas canvas = null;
 
                         Paint p = new Paint();
                         p.setStrokeWidth(10);
-
-                        /*
-                        int[] colors = mAudioAnalysis.getVolumeThresholdMet() ? new int[]{0xFF33b5e6, 0xFFaa66cd, 0xFFffbb34, 0xFF98cb00, 0xFFff4443} :
-                                new int[]{0xFFededed, 0xFFededed, 0xFFededed, 0xFFededed, 0xFFededed};
-                        int[] colors2 = mAudioAnalysis.getVolumeThresholdMet() ? new int[]{0x1F33b5e6, 0x1Faa66cd, 0x1Fffbb34, 0x1F98cb00, 0x1Fff4443} :
-                                new int[]{0x3Fededed, 0x3Fededed, 0x3Fededed, 0x3Fededed, 0x3Fededed};
-                        */
-
-                        int[] colors = {0xFF33b5e6, 0xFFaa66cd, 0xFFffbb34, 0xFF98cb00, 0xFFff4443};
-                        int[] colors2 = {0x1F33b5e6, 0x1Faa66cd, 0x1Fffbb34, 0x1F98cb00, 0x1Fff4443};
-
-                        int[] colors3 = {0xFFededed, 0xFFededed, 0xFFededed, 0xFFededed, 0xFFededed};
-                        int[] colors4 = {0x3Fededed, 0x3Fededed, 0x3Fededed, 0x3Fededed, 0x3Fededed};
 
                         canvas = mSurfaceHolder.lockCanvas();
 
@@ -97,20 +91,19 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
                         for (int i = 0; i < mPCP.length; i++) {
                             if(mAudioAnalysis.getVolumeThresholdMet() && oneOfThreeMostIntenseNotes(i)) {
                                 p.setColor(colors[i % 5]);
-                                Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
+                               // Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
                                 canvas.drawLine(canvasPortion * i + 50, (float) scalePCPElement(mPCP[i]), canvasPortion * i + 50, canvasHeight, p);
-                                // canvas.drawLine(canvasPortion*i+50, 900, canvasPortion*i+50, canvasHeight, p);
-                                Log.i(TAG, "Line Drawn");
+                               // Log.i(TAG, "Line Drawn");
                                 p.setColor(colors2[i % 5]);
                                 canvas.drawCircle(canvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 35, p);
                                 p.setColor(colors[i % 5]);
                                 canvas.drawCircle(canvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 20, p);
                             } else {
                                 p.setColor(colors3[i % 5]);
-                                Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
+                               // Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
                                 canvas.drawLine(canvasPortion * i + 50, (float) scalePCPElement(mPCP[i]), canvasPortion * i + 50, canvasHeight, p);
                                 // canvas.drawLine(canvasPortion*i+50, 900, canvasPortion*i+50, canvasHeight, p);
-                                Log.i(TAG, "Line Drawn");
+                              //  Log.i(TAG, "Line Drawn");
                                 p.setColor(colors4[i % 5]);
                                 canvas.drawCircle(canvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 35, p);
                                 p.setColor(colors3[i % 5]);
