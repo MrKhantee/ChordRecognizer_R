@@ -18,7 +18,6 @@ public class RecordAudio {
 
     private static int count = 1;
 
-
     private AudioRecord recorder;
 
     private MainActivity mMainActivity;

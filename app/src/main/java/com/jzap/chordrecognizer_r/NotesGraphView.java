@@ -25,6 +25,9 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
     public static final int[] colors3 = {0xFFededed, 0xFFededed, 0xFFededed, 0xFFededed, 0xFFededed};
     public static final int[] colors4 = {0x3Fededed, 0x3Fededed, 0x3Fededed, 0x3Fededed, 0x3Fededed};
 
+    public static final int[] colors5 = {0x0F33b5e6, 0x0Faa66cd, 0x0Fffbb34, 0x0F98cb00, 0x0Fff4443};
+    public static final int[] colors6 = {0x0433b5e6, 0x04aa66cd, 0x04ffbb34, 0x0498cb00, 0x04ff4443};
+
     // TODO : Replace this with AudioAnalysis
     private double[] mPCP;
     private AudioAnalysis mAudioAnalysis;
@@ -73,6 +76,7 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
 
                         Paint p = new Paint();
                         p.setStrokeWidth(10);
+                        p.setTextSize(60);
 
                         canvas = mSurfaceHolder.lockCanvas();
 
@@ -88,21 +92,41 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
 
                         canvas.drawColor(0, PorterDuff.Mode.CLEAR);
 
+                        // TODO : Fix bug where after hitting home button then reopening app, the app crashes here - java.lang.NullPointerException
                         for (int i = 0; i < mPCP.length; i++) {
-                            if(mAudioAnalysis.getVolumeThresholdMet() && oneOfThreeMostIntenseNotes(i)) {
-                                p.setColor(colors[i % 5]);
-                               // Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
-                                canvas.drawLine(canvasPortion * i + 50, (float) scalePCPElement(mPCP[i]), canvasPortion * i + 50, canvasHeight, p);
-                               // Log.i(TAG, "Line Drawn");
-                                p.setColor(colors2[i % 5]);
-                                canvas.drawCircle(canvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 35, p);
-                                p.setColor(colors[i % 5]);
-                                canvas.drawCircle(canvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 20, p);
+                            if(mAudioAnalysis.getVolumeThresholdMet()) {
+                                if(oneOfThreeMostIntenseNotes(i)) {
+                                    p.setColor(colors[i % 5]);
+                                    // Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
+                                    canvas.drawLine(canvasPortion * i + 50, (float) scalePCPElement(mPCP[i]), canvasPortion * i + 50, canvasHeight, p);
+                                    // Log.i(TAG, "Line Drawn");
+                                    p.setColor(colors2[i % 5]);
+                                    canvas.drawCircle(canvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 35, p);
+                                    canvas.drawText(ProcessAudio.indexToNote(i), canvasPortion * i + 65, canvasHeight , p);
+                                    p.setColor(colors[i % 5]);
+                                    canvas.drawText(ProcessAudio.indexToNote(i), canvasPortion * i + 75, (float) scalePCPElement(mPCP[i]) , p);
+                                    canvas.drawCircle(canvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 20, p);
+                                }
+                                else {
+                                    p.setColor(colors5[i % 5]);
+                                    // Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
+                                    canvas.drawLine(canvasPortion * i + 50, (float) scalePCPElement(mPCP[i]), canvasPortion * i + 50, canvasHeight, p);
+                                    // Experiment 1-21-2015
+                                    //canvas.drawText("HELLO", canvasPortion * i + 50, (float) scalePCPElement(mPCP[i]) , p);
+                                    canvas.drawText(ProcessAudio.indexToNote(i), canvasPortion * i + 65, canvasHeight , p);
+                                    // canvas.drawLine(canvasPortion*i+50, 900, canvasPortion*i+50, canvasHeight, p);
+                                    //  Log.i(TAG, "Line Drawn");
+                                    p.setColor(colors6[i % 5]);
+                                    canvas.drawCircle(canvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 35, p);
+                                    p.setColor(colors5[i % 5]);
+                                    canvas.drawCircle(canvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 20, p);
+                                }
                             } else {
+                                // TODO : There doesn't seem to be any reason to store the same color multiple times in an array - use a single color variable
                                 p.setColor(colors3[i % 5]);
                                // Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
                                 canvas.drawLine(canvasPortion * i + 50, (float) scalePCPElement(mPCP[i]), canvasPortion * i + 50, canvasHeight, p);
-                                // canvas.drawLine(canvasPortion*i+50, 900, canvasPortion*i+50, canvasHeight, p);
+                                canvas.drawText(ProcessAudio.indexToNote(i), canvasPortion * i + 65, canvasHeight , p);
                               //  Log.i(TAG, "Line Drawn");
                                 p.setColor(colors4[i % 5]);
                                 canvas.drawCircle(canvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 35, p);

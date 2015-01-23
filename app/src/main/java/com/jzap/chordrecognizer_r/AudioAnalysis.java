@@ -50,6 +50,5 @@ public class AudioAnalysis {
     public void setVolumeThresholdMet(boolean volumeThresholdMet) {
         this.volumeThresholdMet = volumeThresholdMet;
     }
-
     // End Accessors/Modifiers
 }

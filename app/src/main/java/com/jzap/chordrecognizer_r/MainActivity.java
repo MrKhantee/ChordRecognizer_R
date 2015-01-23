@@ -37,13 +37,12 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onResume() {
-        Log.i(TAG, "onResume() : resumed");
         super.onResume();
+        Log.i(TAG, "onResume() : resumed");
         initializeMembers();
         new Thread(mWorkerRunnable).start();
 
         makeGraph();
-
     }
 
     @Override
@@ -70,7 +69,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onPause() {
-        super.onStop();
+        super.onPause();
         Log.i(TAG, "onPause() : Paused");
         resetButton();
         mWorkerRunnable.setmEndRunnable(true);
@@ -137,12 +136,12 @@ public class MainActivity extends Activity {
 
         if (mRecording) {
             Log.i(TAG, "mRecording");
-            ColorFilter filter = new LightingColorFilter(010101, Color.RED);
+            ColorFilter filter = new LightingColorFilter(000000, Color.RED);
             mDr_readyButton.setColorFilter(filter);
             mIv_button.setImageDrawable(mDr_readyButton);
         } else {
             Log.i(TAG, "!mRecording");
-            ColorFilter filter = new LightingColorFilter(010101, Color.BLACK);
+            ColorFilter filter = new LightingColorFilter(000000, 0xFFededed);
             mDr_button.setColorFilter(filter);
             mIv_button.setImageDrawable(mDr_button);
         }
@@ -152,7 +151,5 @@ public class MainActivity extends Activity {
         return mRecording;
     }
 // End Accessors/Mutators
-
-
 
 }
