@@ -33,7 +33,6 @@ public class RecordAudio {
     // End Constructor
 
     public boolean volumeThresholdMet() {
-        // TODO : Rename to something more accurate
         ArrayList<Short> cumulativeTestAudioInput = new ArrayList<Short>();
         short[] testAudioInput = new short[100];
         recorder.startRecording();
@@ -54,8 +53,6 @@ public class RecordAudio {
             //Log.i(TAG, String.valueOf(greatestSample));
             showVolume(greatestSample);
 
-            // TODO : This is wasteful, redesign
-
             if (count >= graphPCPInterval) {
                 new ProcessAudio(mMainActivity).detectChord(toPrimitive(cumulativeTestAudioInput), false);
                 cumulativeTestAudioInput = new ArrayList<Short>();
@@ -64,8 +61,7 @@ public class RecordAudio {
             count++;
 
         }//end while
-        // TODO : Fix this hack to reset button
-        showVolume(-1);
+        //showVolume(-1);
         recorder.stop();
         return false;
     }
@@ -90,9 +86,6 @@ public class RecordAudio {
         recorder.read(audioInput, 0, audioInput.length);
         recorder.stop();
 
-        // TODO : Introduce functionality to update NotesGraphView
-
-        //return new ProcessAudio().detectChord(audioInput);
         return new ProcessAudio(mMainActivity).detectChord(audioInput, true);
     }
 
@@ -100,13 +93,11 @@ public class RecordAudio {
         recorder.release();
     }
 
-
     public void showVolume(int greatestSample) {
         Integer i;
         int quarterVolThrshld = VOLUME_THRESHOLD/4;
 
         if(greatestSample < 0) {
-            // TODO : This is part of the hack from above
             Log.i(TAG, "greatestSample = -1");
             mHandler.obtainMessage(MainWorkerRunnable.DISPLAY_BUTTON_OFF).sendToTarget();
             return;

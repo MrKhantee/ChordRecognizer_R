@@ -75,6 +75,7 @@ public class MainWorkerRunnable implements Runnable {
     public void run() {
         AudioAnalysis audioAnalysis;
         RecordAudio recordAudio = new RecordAudio(mMainActivity, mHandler);
+        // Consider killing thread when record button is shut off, and restarting when turned back on (May save battery, may be good practice...)
         while(!mEndRunnable) {
             if(mMainActivity.getmRecording() && recordAudio.volumeThresholdMet() ) {
                 // There's a tradeoff in getting the audioAnalysis here, instead of after the next line - app seems less responsive
@@ -105,15 +106,15 @@ public class MainWorkerRunnable implements Runnable {
 
     private int lookupChordColor(String chord) {
         if((chord.contains("C") && !chord.contains("C#")) || (chord.contains("F") && !chord.contains("F#"))|| chord.contains("A#")) {
-            return NotesGraphView.colors[0];
+            return NotesGraphView.mOPAQUE_DARK_COLORS[0];
         } else if(chord.contains("C#") || chord.contains("F#") || chord.contains("B")) {
-            return NotesGraphView.colors[1];
+            return NotesGraphView.mOPAQUE_DARK_COLORS[1];
         } else if((chord.contains("D") && !chord.contains("D#")) || (chord.contains("G") && !chord.contains("G#"))) {
-            return NotesGraphView.colors[2];
+            return NotesGraphView.mOPAQUE_DARK_COLORS[2];
         } else if(chord.contains("D#") || chord.contains("G#")) {
-            return NotesGraphView.colors[3];
+            return NotesGraphView.mOPAQUE_DARK_COLORS[3];
         }else if(chord.contains("E") || (chord.contains("A")))   {
-            return NotesGraphView.colors[4];
+            return NotesGraphView.mOPAQUE_DARK_COLORS[4];
         }
         Log.i(TAG, "No Color");
         return -1;

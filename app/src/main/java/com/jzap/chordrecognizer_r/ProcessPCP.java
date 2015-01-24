@@ -65,26 +65,13 @@ public class ProcessPCP {
 		vectorNorm = Math.sqrt(squareSum);
 		return vectorNorm;
 	}
-
-	//TODO : This is basically a copy from PCP.  A bit hacky.  Consider fixing.
 	
 	public static String sort(double[] myScores) {
- 		//System.out.println(Arrays.toString(myArray));
- 		double[] sortedArray = copyArray(myScores);
+        double[] sortedArray = Arrays.copyOf(myScores, myScores.length);
  		Arrays.sort(sortedArray);
- 		//System.out.println(Arrays.toString(myArray));
  		String chord = indexToChord(indexOf(sortedArray[0], myScores));
  		
  		return chord;
- 	}
- 	
- 	// Arrays.copyOf not supported on API 8 (my min?)
- 	public static double[] copyArray(double[] myArray) {
- 		double[] newArray = new double[myArray.length];
- 		for(int i=0; i<myArray.length; i++) {
- 			newArray[i] = myArray[i];
- 		}
- 		return newArray;
  	}
  	
  	public static int indexOf(double value, double[] array){
