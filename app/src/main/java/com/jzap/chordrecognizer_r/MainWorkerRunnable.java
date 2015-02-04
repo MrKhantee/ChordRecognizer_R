@@ -42,7 +42,9 @@ public class MainWorkerRunnable implements Runnable {
 
         mMainActivity = mainActivity;
         mDrDormantButton = mMainActivity.getResources().getDrawable(R.drawable.button);
-        mBmpButton = BitmapFactory.decodeResource(mMainActivity.getResources(), R.drawable.plainbutton);
+        mBmpButton = BitmapFactory.decodeResource(mMainActivity.getResources(), R.drawable.button);
+
+        //Log.i(TAG, "Button Height = " + mDrDormantButton.getHeight());
 
         mBmpLabeledButton = Bitmap.createBitmap(mBmpButton.getWidth(), mBmpButton.getHeight(), Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(mBmpLabeledButton);

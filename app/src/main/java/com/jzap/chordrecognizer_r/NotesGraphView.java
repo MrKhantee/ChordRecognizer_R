@@ -1,12 +1,19 @@
 package com.jzap.chordrecognizer_r;
 
+import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PixelFormat;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.WindowManager;
 
 /**
  * Created by Justin on 12/6/2014.
@@ -38,8 +45,14 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
     private int mCanvasHeight;
     private int mCanvasPortion;
 
+    private MainActivity mMainActivity;
+
     public NotesGraphView (android.content.Context context) {
         super(context);
+
+
+       mMainActivity = (MainActivity) context;
+
 
         mEndRunnable = false;
         setZOrderOnTop(true);
@@ -50,27 +63,27 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
 
         mOPAQUE_DARK_COLORS[0] = getResources().getColor(R.color.O_BLUE);
         mOPAQUE_DARK_COLORS[1] = getResources().getColor(R.color.O_PURPLE);
-        mOPAQUE_DARK_COLORS[2] = getResources().getColor(R.color.O_ORANGE);
-        mOPAQUE_DARK_COLORS[3] = getResources().getColor(R.color.O_RED);
-        mOPAQUE_DARK_COLORS[4] = getResources().getColor(R.color.O_GREEN);
+        mOPAQUE_DARK_COLORS[2] = getResources().getColor(R.color.O_GREEN);
+        mOPAQUE_DARK_COLORS[3] = getResources().getColor(R.color.O_ORANGE);
+        mOPAQUE_DARK_COLORS[4] = getResources().getColor(R.color.O_RED);
 
         mOPAQUE_LIGHT_COLORS[0] = getResources().getColor(R.color.O_LIGHTBLUE);
         mOPAQUE_LIGHT_COLORS[1] = getResources().getColor(R.color.O_LIGHTPURPLE);
-        mOPAQUE_LIGHT_COLORS[2] = getResources().getColor(R.color.O_LIGHTORANGE);
-        mOPAQUE_LIGHT_COLORS[3] = getResources().getColor(R.color.O_LIGHTRED);
-        mOPAQUE_LIGHT_COLORS[4] = getResources().getColor(R.color.O_LIGHTGREEN);
+        mOPAQUE_LIGHT_COLORS[2] = getResources().getColor(R.color.O_LIGHTGREEN);
+        mOPAQUE_LIGHT_COLORS[3] = getResources().getColor(R.color.O_LIGHTORANGE);
+        mOPAQUE_LIGHT_COLORS[4] = getResources().getColor(R.color.O_LIGHTRED);
 
         mTRANSLUCENT_DARK_COLORS[0] = getResources().getColor(R.color.T_BLUE);
         mTRANSLUCENT_DARK_COLORS[1] = getResources().getColor(R.color.T_PURPLE);
-        mTRANSLUCENT_DARK_COLORS[2] = getResources().getColor(R.color.T_ORANGE);
-        mTRANSLUCENT_DARK_COLORS[3] = getResources().getColor(R.color.T_RED);
-        mTRANSLUCENT_DARK_COLORS[4] = getResources().getColor(R.color.T_GREEN);
+        mTRANSLUCENT_DARK_COLORS[2] = getResources().getColor(R.color.T_GREEN);
+        mTRANSLUCENT_DARK_COLORS[3] = getResources().getColor(R.color.T_ORANGE);
+        mTRANSLUCENT_DARK_COLORS[4] = getResources().getColor(R.color.T_RED);
 
         mTRANSLUCENT_LIGHT_COLORS[0] = getResources().getColor(R.color.T_LIGHTBLUE);
         mTRANSLUCENT_LIGHT_COLORS[1] = getResources().getColor(R.color.T_LIGHTPURPLE);
-        mTRANSLUCENT_LIGHT_COLORS[2] = getResources().getColor(R.color.T_LIGHTORANGE);
-        mTRANSLUCENT_LIGHT_COLORS[3] = getResources().getColor(R.color.T_LIGHTRED);
-        mTRANSLUCENT_LIGHT_COLORS[4] = getResources().getColor(R.color.T_LIGHTGREEN);
+        mTRANSLUCENT_LIGHT_COLORS[2] = getResources().getColor(R.color.T_LIGHTGREEN);
+        mTRANSLUCENT_LIGHT_COLORS[3] = getResources().getColor(R.color.T_LIGHTORANGE);
+        mTRANSLUCENT_LIGHT_COLORS[4] = getResources().getColor(R.color.T_LIGHTRED);
 
         mPaint = new Paint();
         mPaint.setStrokeWidth(10);
@@ -111,42 +124,21 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
 
                         mCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
 
-                        // TODO : Fix bug where after hitting home button then reopening app, the app crashes here - java.lang.NullPointerException
-                        for (int i = 0; i < mPCP.length; i++) {
-                            if(mAudioAnalysis.getVolumeThresholdMet()) {
-                                if(oneOfThreeMostIntenseNotes(i)) {
-                                    mPaint.setColor(mOPAQUE_DARK_COLORS[i % 5]);
-                                    // Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
-                                    mCanvas.drawLine(mCanvasPortion * i + 50, (float) scalePCPElement(mPCP[i]), mCanvasPortion * i + 50, mCanvasHeight, mPaint);
-                                    // Log.i(TAG, "Line Drawn");
-                                    mPaint.setColor(mOPAQUE_LIGHT_COLORS[i % 5]);
-                                    mCanvas.drawCircle(mCanvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 35, mPaint);
-                                    mCanvas.drawText(ProcessAudio.indexToNote(i), mCanvasPortion * i + 65, mCanvasHeight, mPaint);
-                                    mPaint.setColor(mOPAQUE_DARK_COLORS[i % 5]);
-                                    mCanvas.drawText(ProcessAudio.indexToNote(i), mCanvasPortion * i + 75, (float) scalePCPElement(mPCP[i]), mPaint);
-                                    mCanvas.drawCircle(mCanvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 20, mPaint);
+                        if (mPCP != null) {
+                            for (int i = 0; i < mPCP.length; i++) {
+                                if(mAudioAnalysis.getVolumeThresholdMet()) {
+                                    if(oneOfThreeMostIntenseNotes(i)) {
+                                       // drawThreeMostIntenseNotes(i);
+                                        drawThreeMostIntenseNotesTriangle(i);
+                                    }
+                                    else {
+                                        // drawNotesVolumeThresholdMet(i);
+                                        drawVolumeThresholdMetTriangle(i);
+                                    }
+                                } else {
+                                    // drawNotesVolumeThresholdNotMet(i);
+                                    drawVolumeThresholdNotMetTriangle(i);
                                 }
-                                else {
-                                    mPaint.setColor(mTRANSLUCENT_DARK_COLORS[i % 5]);
-                                    // Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
-                                    mCanvas.drawLine(mCanvasPortion * i + 50, (float) scalePCPElement(mPCP[i]), mCanvasPortion * i + 50, mCanvasHeight, mPaint);
-                                    mCanvas.drawText(ProcessAudio.indexToNote(i), mCanvasPortion * i + 65, mCanvasHeight, mPaint);
-                                    //  Log.i(TAG, "Line Drawn");
-                                    mPaint.setColor(mTRANSLUCENT_LIGHT_COLORS[i % 5]);
-                                    mCanvas.drawCircle(mCanvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 35, mPaint);
-                                    mPaint.setColor(mTRANSLUCENT_DARK_COLORS[i % 5]);
-                                    mCanvas.drawCircle(mCanvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 20, mPaint);
-                                }
-                            } else {
-                                mPaint.setColor(getResources().getColor(R.color.GRAY));
-                                // Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
-                                mCanvas.drawLine(mCanvasPortion * i + 50, (float) scalePCPElement(mPCP[i]), mCanvasPortion * i + 50, mCanvasHeight, mPaint);
-                                mCanvas.drawText(ProcessAudio.indexToNote(i), mCanvasPortion * i + 65, mCanvasHeight, mPaint);
-                                // Log.i(TAG, "Line Drawn");
-                                mPaint.setColor(getResources().getColor(R.color.LIGHTGRAY));
-                                mCanvas.drawCircle(mCanvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 35, mPaint);
-                                mPaint.setColor(getResources().getColor(R.color.GRAY));
-                                mCanvas.drawCircle(mCanvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 20, mPaint);
                             }
                         }
                         mSurfaceHolder.unlockCanvasAndPost(mCanvas);
@@ -165,6 +157,186 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {}
 // End SurfaceHolder.Callback implementations
 
+
+    // TODO : Figure out the math for this
+    private void drawThreeMostIntenseNotesTriangle(int i) {
+        //Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+        WindowManager window = (WindowManager) mMainActivity.getSystemService(Context.WINDOW_SERVICE);
+        Display display = window.getDefaultDisplay();
+
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        display.getMetrics(outMetrics);
+
+        Point origin = new Point(outMetrics.widthPixels/2, outMetrics.heightPixels/2);
+
+        mPaint.setStrokeWidth(2);
+        mPaint.setColor(mOPAQUE_DARK_COLORS[i % 5]);
+        mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        mPaint.setAntiAlias(true);
+
+        // Vector2D side1 = new Vector2D(origin, scalePCPElement(mPCP[i] - 50), (360/12)*(i));
+        // Vector2D side2 = new Vector2D(origin, scalePCPElement(mPCP[i] - 50), (360/12)*(i+1));
+
+        Vector2D side1 = new Vector2D(origin, scalePCPElement(mPCP[i]), (360/12)*(i));
+        Vector2D side2 = new Vector2D(origin, scalePCPElement(mPCP[i]), (360/12)*(i+1));
+
+        Log.i(TAG,  "Angle " + String.valueOf(i) + " : " + String.valueOf((360/12)*(i)));
+        Log.i(TAG,  "Angle " + String.valueOf(i+1) + " : " + String.valueOf((360/12)*(i+1)));
+
+        Point point1_draw = new Point(origin.x, origin.y);
+        Point point2_draw = new Point(side1.getEndPoint().x, side1.getEndPoint().y);
+        Point point3_draw = new Point(side2.getEndPoint().x, side2.getEndPoint().y);
+
+        Path path = new Path();
+        path.setFillType(Path.FillType.EVEN_ODD);
+        path.moveTo(point1_draw.x,point1_draw.y);
+        path.lineTo(point2_draw.x,point2_draw.y);
+        path.lineTo(point3_draw.x,point3_draw.y);
+        path.lineTo(point1_draw.x,point1_draw.y);
+        path.close();
+
+        mCanvas.drawPath(path, mPaint);
+    }
+
+    private void drawVolumeThresholdMetTriangle(int i) {
+        WindowManager window = (WindowManager) mMainActivity.getSystemService(Context.WINDOW_SERVICE);
+        Display display = window.getDefaultDisplay();
+
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        display.getMetrics(outMetrics);
+
+        Point origin = new Point(outMetrics.widthPixels/2, outMetrics.heightPixels/2);
+
+        mPaint.setStrokeWidth(2);
+        mPaint.setColor(mTRANSLUCENT_DARK_COLORS[i % 5]);
+        mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        mPaint.setAntiAlias(true);
+
+        // Vector2D side1 = new Vector2D(origin, scalePCPElement(mPCP[i] - 50), (360/12)*(i));
+        // Vector2D side2 = new Vector2D(origin, scalePCPElement(mPCP[i] - 50), (360/12)*(i+1));
+
+        Vector2D side1 = new Vector2D(origin, scalePCPElement(mPCP[i]), (360/12)*(i));
+        Vector2D side2 = new Vector2D(origin, scalePCPElement(mPCP[i]), (360/12)*(i+1));
+
+        Log.i(TAG,  "Angle " + String.valueOf(i) + " : " + String.valueOf((360/12)*(i)));
+        Log.i(TAG,  "Angle " + String.valueOf(i+1) + " : " + String.valueOf((360/12)*(i+1)));
+
+        Point point1_draw = new Point(origin.x, origin.y);
+        Point point2_draw = new Point(side1.getEndPoint().x, side1.getEndPoint().y);
+        Point point3_draw = new Point(side2.getEndPoint().x, side2.getEndPoint().y);
+
+        Path path = new Path();
+        path.setFillType(Path.FillType.EVEN_ODD);
+        path.moveTo(point1_draw.x,point1_draw.y);
+        path.lineTo(point2_draw.x,point2_draw.y);
+        path.lineTo(point3_draw.x,point3_draw.y);
+        path.lineTo(point1_draw.x,point1_draw.y);
+        path.close();
+
+        mCanvas.drawPath(path, mPaint);
+    }
+
+    private void drawVolumeThresholdNotMetTriangle(int i) {
+
+        WindowManager window = (WindowManager) mMainActivity.getSystemService(Context.WINDOW_SERVICE);
+        Display display = window.getDefaultDisplay();
+
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        display.getMetrics(outMetrics);
+
+        Point origin = new Point(outMetrics.widthPixels / 2, outMetrics.heightPixels / 2);
+
+        mPaint.setStrokeWidth(2);
+        mPaint.setColor(mOPAQUE_LIGHT_COLORS[i % 5]);
+        mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        mPaint.setAntiAlias(true);
+
+        // Vector2D side1 = new Vector2D(origin, scalePCPElement(mPCP[i] - 50), (360/12)*(i));
+        // Vector2D side2 = new Vector2D(origin, scalePCPElement(mPCP[i] - 50), (360/12)*(i+1));
+
+        Vector2D side1 = new Vector2D(origin, scalePCPElement(mPCP[i]), (360/12)*(i));
+        Vector2D side2 = new Vector2D(origin, scalePCPElement(mPCP[i]), (360/12)*(i+1));
+
+        Log.i(TAG, "Angle " + String.valueOf(i) + " : " + String.valueOf((360 / 12) * (i)));
+        Log.i(TAG, "Angle " + String.valueOf(i + 1) + " : " + String.valueOf((360 / 12) * (i + 1)));
+
+        Point point1_draw = new Point(origin.x, origin.y);
+        Point point2_draw = new Point(side1.getEndPoint().x, side1.getEndPoint().y);
+        Point point3_draw = new Point(side2.getEndPoint().x, side2.getEndPoint().y);
+
+        Path path = new Path();
+        path.setFillType(Path.FillType.EVEN_ODD);
+        path.moveTo(point1_draw.x,point1_draw.y);
+        path.lineTo(point2_draw.x,point2_draw.y);
+
+        // TODO : Make these arcs
+        path.lineTo(point3_draw.x,point3_draw.y);
+        path.lineTo(point1_draw.x,point1_draw.y);
+
+        path.close();
+
+        mCanvas.drawPath(path, mPaint);
+    }
+
+
+    private void drawThreeMostIntenseNotes(int i) {
+        mPaint.setColor(mOPAQUE_DARK_COLORS[i % 5]);
+        // Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
+        mCanvas.drawLine(mCanvasPortion * i + 50, (float) scalePCPElement(mPCP[i]), mCanvasPortion * i + 50, mCanvasHeight, mPaint);
+
+        // Experiment
+        mCanvas.drawRect((mCanvasPortion * i), mCanvasHeight, (mCanvasPortion * i + mCanvasPortion), 0, mPaint);
+        // End Experiment
+
+        // Log.i(TAG, "Line Drawn");
+        mPaint.setColor(mOPAQUE_LIGHT_COLORS[i % 5]);
+        mCanvas.drawCircle(mCanvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 80, mPaint); //radius was 35
+        mCanvas.drawText(ProcessAudio.indexToNote(i), mCanvasPortion * i + 65, mCanvasHeight, mPaint);
+        mPaint.setColor(mOPAQUE_DARK_COLORS[i % 5]);
+        mCanvas.drawText(ProcessAudio.indexToNote(i), mCanvasPortion * i + 75, (float) scalePCPElement(mPCP[i]), mPaint);
+        mCanvas.drawCircle(mCanvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 20, mPaint); // radius was 20
+    }
+
+    private void drawNotesVolumeThresholdMet(int i) {
+        mPaint.setColor(mTRANSLUCENT_DARK_COLORS[i % 5]);
+        // Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
+        mCanvas.drawLine(mCanvasPortion * i + 50, (float) scalePCPElement(mPCP[i]), mCanvasPortion * i + 50, mCanvasHeight, mPaint);
+
+
+        // Experiment
+        mCanvas.drawRect((mCanvasPortion * i), mCanvasHeight, (mCanvasPortion * i + mCanvasPortion), 0, mPaint);
+        // End Experiment
+
+
+        mCanvas.drawText(ProcessAudio.indexToNote(i), mCanvasPortion * i + 65, mCanvasHeight, mPaint);
+        //  Log.i(TAG, "Line Drawn");
+        mPaint.setColor(mTRANSLUCENT_LIGHT_COLORS[i % 5]);
+        mCanvas.drawCircle(mCanvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 80, mPaint); //radius was 35
+        mPaint.setColor(mTRANSLUCENT_DARK_COLORS[i % 5]);
+        mCanvas.drawCircle(mCanvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 20, mPaint); // radius was 20
+
+    }
+
+    private void drawNotesVolumeThresholdNotMet(int i) {
+        mPaint.setColor(getResources().getColor(R.color.GRAY));
+        // Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
+        mCanvas.drawLine(mCanvasPortion * i + 50, (float) scalePCPElement(mPCP[i]), mCanvasPortion * i + 50, mCanvasHeight, mPaint);
+
+        // Experiment
+        mPaint.setColor(mOPAQUE_DARK_COLORS[i % 5]);
+        mCanvas.drawRect((mCanvasPortion * i), mCanvasHeight, (mCanvasPortion * i + mCanvasPortion), 0, mPaint);
+        // End Experiment
+
+        mCanvas.drawText(ProcessAudio.indexToNote(i), mCanvasPortion * i + 65, mCanvasHeight, mPaint);
+        // Log.i(TAG, "Line Drawn");
+        mPaint.setColor(getResources().getColor(R.color.LIGHTGRAY));
+        mCanvas.drawCircle(mCanvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 80, mPaint); //radius was 35
+        mPaint.setColor(getResources().getColor(R.color.GRAY));
+        mCanvas.drawCircle(mCanvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 20, mPaint); // radius was 20
+    }
+
+    /* // TODO : Get rid of this
     double scalePCPElement(double elem) {
         double distanceFromOriginY = (1 - elem) * mVirtualCanvasMaxHeight;
         if(distanceFromOriginY <= 0 ) {
@@ -172,6 +344,11 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         }
         double d = mVirtualCanvasOriginY + distanceFromOriginY;
         return d;
+    }
+    */ // TODO : Make this dynamic to screen size and distance to boarder
+    double scalePCPElement(double elem) {
+        Log.i(TAG, "scale = " + elem *1000);
+        return elem * 1000;
     }
 
     public void setmEndRunnable(boolean endRunnable) {

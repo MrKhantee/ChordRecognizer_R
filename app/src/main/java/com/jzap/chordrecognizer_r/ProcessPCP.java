@@ -170,6 +170,7 @@ public class ProcessPCP {
     //Is this best practice?
     private static final int numOfChords = Chords.length;
 
+    // TODO : Why is this never used?
     public static final String[] ChordNames = {"CMaj",  "DMaj", "EMaj", "FMaj",  "GMaj",  "AMaj", "BMaj",
             "Cm",    "Dm",   "Em",   "Fm",    "Gm",    "Am",   "Bm",
             "Cdim",  "Ddim", "Edim", "Fdim",  "Gdim",  "Adim", "Bdim",

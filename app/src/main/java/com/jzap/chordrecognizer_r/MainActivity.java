@@ -1,15 +1,20 @@
 package com.jzap.chordrecognizer_r;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.LightingColorFilter;
+import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -43,6 +48,23 @@ public class MainActivity extends Activity {
         new Thread(mWorkerRunnable).start();
 
         makeGraph();
+
+        // TODO : Use or lose
+        // Test
+        WindowManager window = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        Display display = window.getDefaultDisplay();
+
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        display.getMetrics(outMetrics);
+
+        Log.i(TAG, "Density = "+ getResources().getDisplayMetrics().density);
+        Log.i(TAG, "HeighPixels = " + outMetrics.heightPixels);
+        Log.i(TAG, "WidthPixels = " + outMetrics.widthPixels);
+
+        Point size = new Point();
+        display.getSize(size);
+        Log.i(TAG, "Size = " + size);
+        //
     }
 
     @Override
@@ -78,13 +100,9 @@ public class MainActivity extends Activity {
 // End Activity Overrides
 
     private void initializeMembers() {
-        mTv_chord = (TextView) findViewById(R.id.tv_chord);
-        mTv_mostIntenseNote = (TextView) findViewById(R.id.tv_mostIntenseNote);
-        mTv_secMostIntenseNote = (TextView) findViewById(R.id.tv_secMostIntenseNote);
-        mTv_thirdMostIntenseNote = (TextView) findViewById(R.id.tv_thirdMostIntenseNote);
         mIv_button = (ImageView) findViewById(R.id.button);
         mDr_button = getResources().getDrawable(R.drawable.button);
-        mDr_readyButton = getResources().getDrawable(R.drawable.readybutton);
+        mDr_readyButton = getResources().getDrawable(R.drawable.button);
         //mNgv_graph =  new NotesGraphView(this);
 
         mRecording = false;
