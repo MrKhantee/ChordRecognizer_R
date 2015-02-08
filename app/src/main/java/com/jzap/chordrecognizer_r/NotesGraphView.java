@@ -21,6 +21,8 @@ import android.view.WindowManager;
 public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final String TAG = "NotesGraphView";
+    private static final int BACKGROUND_COLOR = 0xFFA8DFF4;
+
     private boolean mEndRunnable;
 
     private AudioAnalysis mAudioAnalysis;
@@ -34,16 +36,13 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
     public static final int[] mTRANSLUCENT_DARK_COLORS = new int[5];
     public static final int[] mTRANSLUCENT_LIGHT_COLORS = new int[5];
 
-    // TODO : Make variable dynamic to screen size
-    private int mVirtualCanvasOriginY = 900;
-    private int mVirtualCanvasMaxHeight;
-
     private Paint mPaint;
 
     private Canvas mCanvas;
-    private int mCanvasWidth;
-    private int mCanvasHeight;
-    private int mCanvasPortion;
+
+    private Point mButtonOrigin;
+    private DisplayMetrics mDisplayMetrics;
+    private int mHalfButtonWidth;
 
     private MainActivity mMainActivity;
 
@@ -55,7 +54,7 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         mEndRunnable = false;
         setZOrderOnTop(false);
 
-        setBackgroundColor(Color.GREEN);
+        setBackgroundColor(BACKGROUND_COLOR);
 
         mSurfaceHolder = getHolder();
         mSurfaceHolder.addCallback(this);
@@ -105,9 +104,10 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         Log.i(TAG, "surfaceCreated");
 
+        setScreenMeasurements();
         drawBackground(true);
 
-        // Consider killing thread when record button is shut off, and restarting when turned back on (May save battery, may be good practice...)
+        // TODO : Consider killing thread when record button is shut off, and restarting when turned back on (May save battery, may be good practice...)
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -116,30 +116,20 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
                     if (ProcessAudio.getmNewPCP()) {
                         mCanvas = null;
                         mCanvas = mSurfaceHolder.lockCanvas();
-
-                        mCanvasWidth = mCanvas.getWidth();
-                        mCanvasHeight = mCanvas.getHeight();
-                        mCanvasPortion = mCanvasWidth/12;
-
-                        mVirtualCanvasMaxHeight = mCanvasHeight - mVirtualCanvasOriginY;
-
                         mCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
-
                         if (mPCP != null) {
+                            setScreenMeasurements();
                             drawBackground(false);
                             for (int i = 0; i < mPCP.length; i++) {
                                 if(mAudioAnalysis.getVolumeThresholdMet()) {
                                     if(oneOfThreeMostIntenseNotes(i)) {
-                                       // drawThreeMostIntenseNotes(i);
-                                        drawThreeMostIntenseNotesTriangle(i);
+                                        drawTriangles(i, true, true);
                                     }
                                     else {
-                                        // drawNotesVolumeThresholdMet(i);
-                                        drawVolumeThresholdMetTriangle(i);
+                                        drawTriangles(i, true, false);
                                     }
                                 } else {
-                                    // drawNotesVolumeThresholdNotMet(i);
-                                    drawVolumeThresholdNotMetTriangle(i);
+                                    drawTriangles(i, false, false);
                                 }
                             }
                         }
@@ -160,55 +150,26 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
 // End SurfaceHolder.Callback implementations
 
 
-    // TODO : Figure out the math for this
-    private void drawThreeMostIntenseNotesTriangle(int i) {
-        //Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-        WindowManager window = (WindowManager) mMainActivity.getSystemService(Context.WINDOW_SERVICE);
-        Display display = window.getDefaultDisplay();
-
-        DisplayMetrics outMetrics = new DisplayMetrics();
-        display.getMetrics(outMetrics);
-
-        int[] origin11 = new int[2];
-        int[] origin2 = new int[2];
-
-
-        // TODO : Make this common method
-        mMainActivity.findViewById(R.id.rl_main).getLocationInWindow(origin11);
-        mMainActivity.getmIv_button().getLocationInWindow(origin2);
-        int halfViewLength = mMainActivity.getmIv_button().getHeight()/2;
-        int halfViewWidth = mMainActivity.getmIv_button().getWidth()/2;
-
-        Paint backgroundPaint = new Paint();
-        backgroundPaint.setColor(Color.GREEN);
-        backgroundPaint.setStyle(Paint.Style.FILL);
-
-       // mCanvas.drawRect(0 , 0 , outMetrics.widthPixels, outMetrics.heightPixels, backgroundPaint);
-
-       // Log.i(TAG, "Window x = " + origin2[0] + ", Window y = " + origin2[1]);
-        //Log.i(TAG, "Window x = " + origin11[0] + ", Window y = " + origin11[1]);
-
-        Point origin = new Point(origin2[0] - origin11[0] + halfViewWidth, origin2[1]-origin11[1] + halfViewLength);
-
-      //  Point origin = new Point(outMetrics.widthPixels/2, outMetrics.heightPixels/2);
-
+    private void drawTriangles(int i, boolean volumeThresholdMet, boolean oneOfThreeMostIntenseNotes) {
         mPaint.setStrokeWidth(5);
-        mPaint.setColor(mOPAQUE_DARK_COLORS[i % 5]);
+        if (volumeThresholdMet) {
+            if (oneOfThreeMostIntenseNotes) {
+                mPaint.setColor(mOPAQUE_DARK_COLORS[i % 5]);
+            } else {
+                mPaint.setColor(mTRANSLUCENT_DARK_COLORS[i % 5]);
+            }
+        } else {
+            // TODO : You know what to do
+            mPaint.setColor(0xAAFFFFFF);
+        }
         mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         mPaint.setAntiAlias(true);
 
-        // Vector2D side1 = new Vector2D(origin, scalePCPElement(mPCP[i] - 50), (360/12)*(i));
-        // Vector2D side2 = new Vector2D(origin, scalePCPElement(mPCP[i] - 50), (360/12)*(i+1));
+        Vector2D side1 = new Vector2D(mButtonOrigin, scalePCPElement(mPCP[i]), (360/12)*(i));
+        Vector2D side2 = new Vector2D(mButtonOrigin, scalePCPElement(mPCP[i]), (360/12)*(i+1));
 
-        Vector2D side1 = new Vector2D(origin, scalePCPElement(mPCP[i]), (360/12)*(i));
-        Vector2D side2 = new Vector2D(origin, scalePCPElement(mPCP[i]), (360/12)*(i+1));
-
-
-        Log.i(TAG,  "Angle " + String.valueOf(i) + " : " + String.valueOf((360/12)*(i)));
-        Log.i(TAG,  "Angle " + String.valueOf(i+1) + " : " + String.valueOf((360/12)*(i+1)));
-
-        Point point1_draw = new Point(origin.x, origin.y);
+        Point point1_draw = new Point(mButtonOrigin.x, mButtonOrigin.y);
         Point point2_draw = new Point(side1.getEndPoint().x, side1.getEndPoint().y);
         Point point3_draw = new Point(side2.getEndPoint().x, side2.getEndPoint().y);
 
@@ -217,239 +178,54 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         path.moveTo(point1_draw.x,point1_draw.y);
         path.lineTo(point2_draw.x,point2_draw.y);
         path.lineTo(point3_draw.x,point3_draw.y);
+        // TODO : Make arc
         path.lineTo(point1_draw.x,point1_draw.y);
         path.close();
 
         mCanvas.drawPath(path, mPaint);
     }
 
-    private void drawVolumeThresholdMetTriangle(int i) {
+    private void setScreenMeasurements() {
         WindowManager window = (WindowManager) mMainActivity.getSystemService(Context.WINDOW_SERVICE);
         Display display = window.getDefaultDisplay();
 
-        DisplayMetrics outMetrics = new DisplayMetrics();
-        display.getMetrics(outMetrics);
+        mDisplayMetrics = new DisplayMetrics();
+        display.getMetrics(mDisplayMetrics);
 
-        int[] origin11 = new int[2];
-        int[] origin2 = new int[2];
+        int[] mainLayoutOrigin= new int[2];
+        int[] buttonOrigin = new int[2];
 
-        mMainActivity.findViewById(R.id.rl_main).getLocationInWindow(origin11);
-        mMainActivity.getmIv_button().getLocationInWindow(origin2);
-        int halfViewLength = mMainActivity.getmIv_button().getHeight()/2;
-        int halfViewWidth = mMainActivity.getmIv_button().getWidth()/2;
+        mMainActivity.findViewById(R.id.rl_main).getLocationInWindow(mainLayoutOrigin);
+        mMainActivity.getmIv_button().getLocationInWindow(buttonOrigin);
 
-        Log.i(TAG, "Window x = " + origin2[0] + ", Window y = " + origin2[1]);
-        Log.i(TAG, "Window x = " + origin11[0] + ", Window y = " + origin11[1]);
+        mHalfButtonWidth = mMainActivity.getmIv_button().getHeight()/2;
+        int halfButtonWidth = mMainActivity.getmIv_button().getWidth()/2;
 
-        Point origin = new Point(origin2[0] - origin11[0] + halfViewWidth, origin2[1]-origin11[1] + halfViewLength);
-
-        //  Point origin = new Point(outMetrics.widthPixels/2, outMetrics.heightPixels/2);
-
-        mPaint.setStrokeWidth(5);
-        mPaint.setColor(mTRANSLUCENT_DARK_COLORS[i % 5]);
-        mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        mPaint.setAntiAlias(true);
-
-        // Vector2D side1 = new Vector2D(origin, scalePCPElement(mPCP[i] - 50), (360/12)*(i));
-        // Vector2D side2 = new Vector2D(origin, scalePCPElement(mPCP[i] - 50), (360/12)*(i+1));
-
-        Vector2D side1 = new Vector2D(origin, scalePCPElement(mPCP[i]), (360/12)*(i));
-        Vector2D side2 = new Vector2D(origin, scalePCPElement(mPCP[i]), (360/12)*(i+1));
-
-        Log.i(TAG,  "Angle " + String.valueOf(i) + " : " + String.valueOf((360/12)*(i)));
-        Log.i(TAG,  "Angle " + String.valueOf(i+1) + " : " + String.valueOf((360/12)*(i+1)));
-
-        Point point1_draw = new Point(origin.x, origin.y);
-        Point point2_draw = new Point(side1.getEndPoint().x, side1.getEndPoint().y);
-        Point point3_draw = new Point(side2.getEndPoint().x, side2.getEndPoint().y);
-
-        Path path = new Path();
-        path.setFillType(Path.FillType.EVEN_ODD);
-        path.moveTo(point1_draw.x,point1_draw.y);
-        path.lineTo(point2_draw.x,point2_draw.y);
-        path.lineTo(point3_draw.x,point3_draw.y);
-        path.lineTo(point1_draw.x,point1_draw.y);
-        path.close();
-
-        mCanvas.drawPath(path, mPaint);
-    }
-
-    private void drawVolumeThresholdNotMetTriangle(int i) {
-
-        WindowManager window = (WindowManager) mMainActivity.getSystemService(Context.WINDOW_SERVICE);
-        Display display = window.getDefaultDisplay();
-
-        DisplayMetrics outMetrics = new DisplayMetrics();
-        display.getMetrics(outMetrics);
-
-        int[] origin11 = new int[2];
-        int[] origin2 = new int[2];
-
-        mMainActivity.findViewById(R.id.rl_main).getLocationInWindow(origin11);
-        mMainActivity.getmIv_button().getLocationInWindow(origin2);
-        int halfViewLength = mMainActivity.getmIv_button().getHeight()/2;
-        int halfViewWidth = mMainActivity.getmIv_button().getWidth()/2;
-
-        // TODO : Make common method
-        Paint backgroundPaint = new Paint();
-        backgroundPaint.setColor(Color.GREEN);
-        backgroundPaint.setStyle(Paint.Style.FILL);
-
-       // mCanvas.drawRect(0 , 0 , outMetrics.widthPixels, outMetrics.heightPixels, backgroundPaint);
-
-        Log.i(TAG, "Window x = " + origin2[0] + ", Window y = " + origin2[1]);
-        Log.i(TAG, "Window x = " + origin11[0] + ", Window y = " + origin11[1]);
-
-        mPaint.setColor(Color.BLACK);
-        Point origin = new Point(origin2[0] - origin11[0] + halfViewWidth, origin2[1]-origin11[1] + halfViewLength);
-        //mCanvas.drawText("A", origin2[0] - origin11[0] + halfViewWidth, origin2[1]-origin11[1] + halfViewLength, mPaint);
-
-        //  Point origin = new Point(outMetrics.widthPixels/2, outMetrics.heightPixels/2);
-
-        mPaint.setStrokeWidth(5);
-        mPaint.setColor(mOPAQUE_LIGHT_COLORS[i % 5]);
-        mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        mPaint.setAntiAlias(true);
-
-        // Vector2D side1 = new Vector2D(origin, scalePCPElement(mPCP[i] - 50), (360/12)*(i));
-        // Vector2D side2 = new Vector2D(origin, scalePCPElement(mPCP[i] - 50), (360/12)*(i+1));
-
-        Vector2D side1 = new Vector2D(origin, scalePCPElement(mPCP[i]), (360/12)*(i));
-        Vector2D side2 = new Vector2D(origin, scalePCPElement(mPCP[i]), (360/12)*(i+1));
-
-        Log.i(TAG, "Angle " + String.valueOf(i) + " : " + String.valueOf((360 / 12) * (i)));
-        Log.i(TAG, "Angle " + String.valueOf(i + 1) + " : " + String.valueOf((360 / 12) * (i + 1)));
-
-        Point point1_draw = new Point(origin.x, origin.y);
-        Point point2_draw = new Point(side1.getEndPoint().x, side1.getEndPoint().y);
-        Point point3_draw = new Point(side2.getEndPoint().x, side2.getEndPoint().y);
-
-        Path path = new Path();
-        path.setFillType(Path.FillType.EVEN_ODD);
-        path.moveTo(point1_draw.x,point1_draw.y);
-        path.lineTo(point2_draw.x,point2_draw.y);
-
-        // TODO : Make these arcs
-        path.lineTo(point3_draw.x, point3_draw.y);
-        path.lineTo(point1_draw.x,point1_draw.y);
-
-        path.close();
-
-        mCanvas.drawPath(path, mPaint);
-    }
-
-
-    private void drawThreeMostIntenseNotes(int i) {
-        mPaint.setColor(mOPAQUE_DARK_COLORS[i % 5]);
-        // Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
-        mCanvas.drawLine(mCanvasPortion * i + 50, (float) scalePCPElement(mPCP[i]), mCanvasPortion * i + 50, mCanvasHeight, mPaint);
-
-        // Experiment
-        mCanvas.drawRect((mCanvasPortion * i), mCanvasHeight, (mCanvasPortion * i + mCanvasPortion), 0, mPaint);
-        // End Experiment
-
-        // Log.i(TAG, "Line Drawn");
-        mPaint.setColor(mOPAQUE_LIGHT_COLORS[i % 5]);
-        mCanvas.drawCircle(mCanvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 80, mPaint); //radius was 35
-        mCanvas.drawText(ProcessAudio.indexToNote(i), mCanvasPortion * i + 65, mCanvasHeight, mPaint);
-        mPaint.setColor(mOPAQUE_DARK_COLORS[i % 5]);
-        mCanvas.drawText(ProcessAudio.indexToNote(i), mCanvasPortion * i + 75, (float) scalePCPElement(mPCP[i]), mPaint);
-        mCanvas.drawCircle(mCanvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 20, mPaint); // radius was 20
-    }
-
-    private void drawNotesVolumeThresholdMet(int i) {
-        mPaint.setColor(mTRANSLUCENT_DARK_COLORS[i % 5]);
-        // Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
-        mCanvas.drawLine(mCanvasPortion * i + 50, (float) scalePCPElement(mPCP[i]), mCanvasPortion * i + 50, mCanvasHeight, mPaint);
-
-
-        // Experiment
-        mCanvas.drawRect((mCanvasPortion * i), mCanvasHeight, (mCanvasPortion * i + mCanvasPortion), 0, mPaint);
-        // End Experiment
-
-
-        mCanvas.drawText(ProcessAudio.indexToNote(i), mCanvasPortion * i + 65, mCanvasHeight, mPaint);
-        //  Log.i(TAG, "Line Drawn");
-        mPaint.setColor(mTRANSLUCENT_LIGHT_COLORS[i % 5]);
-        mCanvas.drawCircle(mCanvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 80, mPaint); //radius was 35
-        mPaint.setColor(mTRANSLUCENT_DARK_COLORS[i % 5]);
-        mCanvas.drawCircle(mCanvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 20, mPaint); // radius was 20
-
-    }
-
-    private void drawNotesVolumeThresholdNotMet(int i) {
-        mPaint.setColor(getResources().getColor(R.color.GRAY));
-        // Log.i(TAG, "Drawing Line : " + (float) scalePCPElement(mPCP[i]));
-        mCanvas.drawLine(mCanvasPortion * i + 50, (float) scalePCPElement(mPCP[i]), mCanvasPortion * i + 50, mCanvasHeight, mPaint);
-
-        // Experiment
-        mPaint.setColor(mOPAQUE_DARK_COLORS[i % 5]);
-        mCanvas.drawRect((mCanvasPortion * i), mCanvasHeight, (mCanvasPortion * i + mCanvasPortion), 0, mPaint);
-        // End Experiment
-
-        mCanvas.drawText(ProcessAudio.indexToNote(i), mCanvasPortion * i + 65, mCanvasHeight, mPaint);
-        // Log.i(TAG, "Line Drawn");
-        mPaint.setColor(getResources().getColor(R.color.LIGHTGRAY));
-        mCanvas.drawCircle(mCanvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 80, mPaint); //radius was 35
-        mPaint.setColor(getResources().getColor(R.color.GRAY));
-        mCanvas.drawCircle(mCanvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 20, mPaint); // radius was 20
+        mButtonOrigin = new Point(buttonOrigin[0] - mainLayoutOrigin[0] + halfButtonWidth, buttonOrigin[1]-mainLayoutOrigin[1] + mHalfButtonWidth);
     }
 
     private void drawBackground(boolean creatingThread) {
-
         if (creatingThread) {
             mCanvas = mSurfaceHolder.lockCanvas();
         }
 
-        WindowManager window = (WindowManager) mMainActivity.getSystemService(Context.WINDOW_SERVICE);
-        Display display = window.getDefaultDisplay();
-
-        DisplayMetrics outMetrics = new DisplayMetrics();
-        display.getMetrics(outMetrics);
-
-        int[] origin11 = new int[2];
-        int[] origin2 = new int[2];
-
-        // TODO : Make this common method
-        mMainActivity.findViewById(R.id.rl_main).getLocationInWindow(origin11);
-        mMainActivity.getmIv_button().getLocationInWindow(origin2);
-        int halfViewLength = mMainActivity.getmIv_button().getHeight()/2;
-        int halfViewWidth = mMainActivity.getmIv_button().getWidth()/2;
-
         Paint backgroundPaint = new Paint();
-        backgroundPaint.setColor(Color.GREEN);
+        backgroundPaint.setColor(BACKGROUND_COLOR);
         backgroundPaint.setStyle(Paint.Style.FILL);
 
-        mCanvas.drawRect(0 , 0 , outMetrics.widthPixels, outMetrics.heightPixels, backgroundPaint);
+        mCanvas.drawRect(0, 0, mDisplayMetrics.widthPixels, mDisplayMetrics.heightPixels, backgroundPaint);
         if(creatingThread) {
             setBackgroundColor(Color.TRANSPARENT);
             mSurfaceHolder.unlockCanvasAndPost(mCanvas);
         }
     }
 
-    // TODO : Make this dynamic to screen size and distance to boarder
     double scalePCPElement(double elem) {
-        // TODO : Put all this dupllicate code in common methods/variables
-        WindowManager window = (WindowManager) mMainActivity.getSystemService(Context.WINDOW_SERVICE);
-        Display display = window.getDefaultDisplay();
-
-        DisplayMetrics outMetrics = new DisplayMetrics();
-        display.getMetrics(outMetrics);
-
-        Log.i("scalePCP", "elem = " + String.valueOf(elem));
-
-        int halfViewWidth = mMainActivity.getmIv_button().getWidth()/2;
-        Log.i("scalePCP", "halfViewWidth = " + String.valueOf(halfViewWidth));
         int viewBuffer = 20;
-        int scaleMin = halfViewWidth + viewBuffer;
-        Log.i("scalePCP", "scaleMin = " + String.valueOf(scaleMin));
-        int scaleMax = outMetrics.widthPixels/2;
-        Log.i("scalePCP", "scaleMax = " + String.valueOf(scaleMax));
+        int scaleMin = mHalfButtonWidth + viewBuffer;
+        int scaleMax = mDisplayMetrics.widthPixels/2;
         int scaleRange = scaleMax - scaleMin;
-        Log.i("scalePCP", "scaleRange = " +  String.valueOf(scaleRange));
         double aboveScaleMin = elem * scaleRange;
-        Log.i("scalePCP", "aboveScaleMin = " + String.valueOf(aboveScaleMin));
-        Log.i("scalePCP", "length = " +  String.valueOf(scaleMin + aboveScaleMin));
         return scaleMin + aboveScaleMin;
     }
 
