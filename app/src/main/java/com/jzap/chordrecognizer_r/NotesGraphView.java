@@ -50,12 +50,12 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
     public NotesGraphView (android.content.Context context) {
         super(context);
 
-
-       mMainActivity = (MainActivity) context;
-
+        mMainActivity = (MainActivity) context;
 
         mEndRunnable = false;
-        setZOrderOnTop(true);
+        setZOrderOnTop(false);
+
+        setBackgroundColor(Color.GREEN);
 
         mSurfaceHolder = getHolder();
         mSurfaceHolder.addCallback(this);
@@ -105,6 +105,7 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         Log.i(TAG, "surfaceCreated");
 
+        drawBackground(true);
 
         // Consider killing thread when record button is shut off, and restarting when turned back on (May save battery, may be good practice...)
         new Thread(new Runnable() {
@@ -125,6 +126,7 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
                         mCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
 
                         if (mPCP != null) {
+                            drawBackground(false);
                             for (int i = 0; i < mPCP.length; i++) {
                                 if(mAudioAnalysis.getVolumeThresholdMet()) {
                                     if(oneOfThreeMostIntenseNotes(i)) {
@@ -168,9 +170,30 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         DisplayMetrics outMetrics = new DisplayMetrics();
         display.getMetrics(outMetrics);
 
-        Point origin = new Point(outMetrics.widthPixels/2, outMetrics.heightPixels/2);
+        int[] origin11 = new int[2];
+        int[] origin2 = new int[2];
 
-        mPaint.setStrokeWidth(2);
+
+        // TODO : Make this common method
+        mMainActivity.findViewById(R.id.rl_main).getLocationInWindow(origin11);
+        mMainActivity.getmIv_button().getLocationInWindow(origin2);
+        int halfViewLength = mMainActivity.getmIv_button().getHeight()/2;
+        int halfViewWidth = mMainActivity.getmIv_button().getWidth()/2;
+
+        Paint backgroundPaint = new Paint();
+        backgroundPaint.setColor(Color.GREEN);
+        backgroundPaint.setStyle(Paint.Style.FILL);
+
+       // mCanvas.drawRect(0 , 0 , outMetrics.widthPixels, outMetrics.heightPixels, backgroundPaint);
+
+       // Log.i(TAG, "Window x = " + origin2[0] + ", Window y = " + origin2[1]);
+        //Log.i(TAG, "Window x = " + origin11[0] + ", Window y = " + origin11[1]);
+
+        Point origin = new Point(origin2[0] - origin11[0] + halfViewWidth, origin2[1]-origin11[1] + halfViewLength);
+
+      //  Point origin = new Point(outMetrics.widthPixels/2, outMetrics.heightPixels/2);
+
+        mPaint.setStrokeWidth(5);
         mPaint.setColor(mOPAQUE_DARK_COLORS[i % 5]);
         mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         mPaint.setAntiAlias(true);
@@ -180,6 +203,7 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
 
         Vector2D side1 = new Vector2D(origin, scalePCPElement(mPCP[i]), (360/12)*(i));
         Vector2D side2 = new Vector2D(origin, scalePCPElement(mPCP[i]), (360/12)*(i+1));
+
 
         Log.i(TAG,  "Angle " + String.valueOf(i) + " : " + String.valueOf((360/12)*(i)));
         Log.i(TAG,  "Angle " + String.valueOf(i+1) + " : " + String.valueOf((360/12)*(i+1)));
@@ -206,9 +230,22 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         DisplayMetrics outMetrics = new DisplayMetrics();
         display.getMetrics(outMetrics);
 
-        Point origin = new Point(outMetrics.widthPixels/2, outMetrics.heightPixels/2);
+        int[] origin11 = new int[2];
+        int[] origin2 = new int[2];
 
-        mPaint.setStrokeWidth(2);
+        mMainActivity.findViewById(R.id.rl_main).getLocationInWindow(origin11);
+        mMainActivity.getmIv_button().getLocationInWindow(origin2);
+        int halfViewLength = mMainActivity.getmIv_button().getHeight()/2;
+        int halfViewWidth = mMainActivity.getmIv_button().getWidth()/2;
+
+        Log.i(TAG, "Window x = " + origin2[0] + ", Window y = " + origin2[1]);
+        Log.i(TAG, "Window x = " + origin11[0] + ", Window y = " + origin11[1]);
+
+        Point origin = new Point(origin2[0] - origin11[0] + halfViewWidth, origin2[1]-origin11[1] + halfViewLength);
+
+        //  Point origin = new Point(outMetrics.widthPixels/2, outMetrics.heightPixels/2);
+
+        mPaint.setStrokeWidth(5);
         mPaint.setColor(mTRANSLUCENT_DARK_COLORS[i % 5]);
         mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         mPaint.setAntiAlias(true);
@@ -245,9 +282,31 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         DisplayMetrics outMetrics = new DisplayMetrics();
         display.getMetrics(outMetrics);
 
-        Point origin = new Point(outMetrics.widthPixels / 2, outMetrics.heightPixels / 2);
+        int[] origin11 = new int[2];
+        int[] origin2 = new int[2];
 
-        mPaint.setStrokeWidth(2);
+        mMainActivity.findViewById(R.id.rl_main).getLocationInWindow(origin11);
+        mMainActivity.getmIv_button().getLocationInWindow(origin2);
+        int halfViewLength = mMainActivity.getmIv_button().getHeight()/2;
+        int halfViewWidth = mMainActivity.getmIv_button().getWidth()/2;
+
+        // TODO : Make common method
+        Paint backgroundPaint = new Paint();
+        backgroundPaint.setColor(Color.GREEN);
+        backgroundPaint.setStyle(Paint.Style.FILL);
+
+       // mCanvas.drawRect(0 , 0 , outMetrics.widthPixels, outMetrics.heightPixels, backgroundPaint);
+
+        Log.i(TAG, "Window x = " + origin2[0] + ", Window y = " + origin2[1]);
+        Log.i(TAG, "Window x = " + origin11[0] + ", Window y = " + origin11[1]);
+
+        mPaint.setColor(Color.BLACK);
+        Point origin = new Point(origin2[0] - origin11[0] + halfViewWidth, origin2[1]-origin11[1] + halfViewLength);
+        //mCanvas.drawText("A", origin2[0] - origin11[0] + halfViewWidth, origin2[1]-origin11[1] + halfViewLength, mPaint);
+
+        //  Point origin = new Point(outMetrics.widthPixels/2, outMetrics.heightPixels/2);
+
+        mPaint.setStrokeWidth(5);
         mPaint.setColor(mOPAQUE_LIGHT_COLORS[i % 5]);
         mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         mPaint.setAntiAlias(true);
@@ -271,7 +330,7 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         path.lineTo(point2_draw.x,point2_draw.y);
 
         // TODO : Make these arcs
-        path.lineTo(point3_draw.x,point3_draw.y);
+        path.lineTo(point3_draw.x, point3_draw.y);
         path.lineTo(point1_draw.x,point1_draw.y);
 
         path.close();
@@ -336,19 +395,62 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         mCanvas.drawCircle(mCanvasPortion * i + 50, (float) (scalePCPElement(mPCP[i]) - 50), 20, mPaint); // radius was 20
     }
 
-    /* // TODO : Get rid of this
-    double scalePCPElement(double elem) {
-        double distanceFromOriginY = (1 - elem) * mVirtualCanvasMaxHeight;
-        if(distanceFromOriginY <= 0 ) {
-            Log.i("TAG", "Negative distance from Y");
+    private void drawBackground(boolean creatingThread) {
+
+        if (creatingThread) {
+            mCanvas = mSurfaceHolder.lockCanvas();
         }
-        double d = mVirtualCanvasOriginY + distanceFromOriginY;
-        return d;
+
+        WindowManager window = (WindowManager) mMainActivity.getSystemService(Context.WINDOW_SERVICE);
+        Display display = window.getDefaultDisplay();
+
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        display.getMetrics(outMetrics);
+
+        int[] origin11 = new int[2];
+        int[] origin2 = new int[2];
+
+        // TODO : Make this common method
+        mMainActivity.findViewById(R.id.rl_main).getLocationInWindow(origin11);
+        mMainActivity.getmIv_button().getLocationInWindow(origin2);
+        int halfViewLength = mMainActivity.getmIv_button().getHeight()/2;
+        int halfViewWidth = mMainActivity.getmIv_button().getWidth()/2;
+
+        Paint backgroundPaint = new Paint();
+        backgroundPaint.setColor(Color.GREEN);
+        backgroundPaint.setStyle(Paint.Style.FILL);
+
+        mCanvas.drawRect(0 , 0 , outMetrics.widthPixels, outMetrics.heightPixels, backgroundPaint);
+        if(creatingThread) {
+            setBackgroundColor(Color.TRANSPARENT);
+            mSurfaceHolder.unlockCanvasAndPost(mCanvas);
+        }
     }
-    */ // TODO : Make this dynamic to screen size and distance to boarder
+
+    // TODO : Make this dynamic to screen size and distance to boarder
     double scalePCPElement(double elem) {
-        Log.i(TAG, "scale = " + elem *1000);
-        return elem * 1000;
+        // TODO : Put all this dupllicate code in common methods/variables
+        WindowManager window = (WindowManager) mMainActivity.getSystemService(Context.WINDOW_SERVICE);
+        Display display = window.getDefaultDisplay();
+
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        display.getMetrics(outMetrics);
+
+        Log.i("scalePCP", "elem = " + String.valueOf(elem));
+
+        int halfViewWidth = mMainActivity.getmIv_button().getWidth()/2;
+        Log.i("scalePCP", "halfViewWidth = " + String.valueOf(halfViewWidth));
+        int viewBuffer = 20;
+        int scaleMin = halfViewWidth + viewBuffer;
+        Log.i("scalePCP", "scaleMin = " + String.valueOf(scaleMin));
+        int scaleMax = outMetrics.widthPixels/2;
+        Log.i("scalePCP", "scaleMax = " + String.valueOf(scaleMax));
+        int scaleRange = scaleMax - scaleMin;
+        Log.i("scalePCP", "scaleRange = " +  String.valueOf(scaleRange));
+        double aboveScaleMin = elem * scaleRange;
+        Log.i("scalePCP", "aboveScaleMin = " + String.valueOf(aboveScaleMin));
+        Log.i("scalePCP", "length = " +  String.valueOf(scaleMin + aboveScaleMin));
+        return scaleMin + aboveScaleMin;
     }
 
     public void setmEndRunnable(boolean endRunnable) {

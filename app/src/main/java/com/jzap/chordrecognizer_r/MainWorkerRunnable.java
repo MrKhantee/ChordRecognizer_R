@@ -3,8 +3,10 @@ package com.jzap.chordrecognizer_r;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.LightingColorFilter;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.Drawable;
@@ -52,7 +54,8 @@ public class MainWorkerRunnable implements Runnable {
         mTextPaint = new Paint();
 
         mTextPaint.setAntiAlias(true);
-        mTextPaint.setTextSize(400);
+        mTextPaint.setStrokeWidth(50);
+        mTextPaint.setTextSize(20);
         mTextPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
 
         mHandler = new Handler(Looper.getMainLooper()) {
@@ -122,14 +125,29 @@ public class MainWorkerRunnable implements Runnable {
         return -1;
     }
 
+    // TODO : Most of this is lifted from NotesGraphView, which is to be made into common method - use that method
     private void displayChord(Message message) {
-        int[] loc = new int[2];
         int chordColor = lookupChordColor(((AudioAnalysis) message.obj).getChord());
         mButtonPaint.setColorFilter(new LightingColorFilter(010101, chordColor));
         mCanvas.drawBitmap(mBmpButton, 0, 0, mButtonPaint);
-        mMainActivity.getmIv_button().getLocationInWindow(loc);
-        // TODO : Locate "center" dynamically
-        mCanvas.drawText(((AudioAnalysis) message.obj).getChord(), loc[0] + 200, loc[1] + 700, mTextPaint);
+
+        int[] origin11 = new int[2];
+        int[] origin2 = new int[2];
+
+        mMainActivity.findViewById(R.id.rl_main).getLocationInWindow(origin11);
+        mMainActivity.getmIv_button().getLocationInWindow(origin2);
+        int halfViewLength = mMainActivity.getmIv_button().getHeight()/2;
+        int halfViewWidth = mMainActivity.getmIv_button().getWidth()/2;
+
+        Paint testPaint;
+        testPaint = new Paint();
+        testPaint.setStrokeWidth(10);
+        // TODO : Make dynamic
+        testPaint.setTextSize(50);
+        testPaint.setColor(Color.WHITE);
+
+        mCanvas.drawText(((AudioAnalysis) message.obj).getChord(), halfViewWidth, halfViewLength, testPaint);
+
 
         mMainActivity.getmIv_button().setImageBitmap(mBmpLabeledButton);
     }

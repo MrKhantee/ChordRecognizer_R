@@ -100,6 +100,7 @@ public class MainActivity extends Activity {
 // End Activity Overrides
 
     private void initializeMembers() {
+        // TODO : Are these different buttons still necessary?
         mIv_button = (ImageView) findViewById(R.id.button);
         mDr_button = getResources().getDrawable(R.drawable.button);
         mDr_readyButton = getResources().getDrawable(R.drawable.button);
@@ -115,15 +116,15 @@ public class MainActivity extends Activity {
         mRecording = false;
     }
 
-
     private void makeGraph() {
         Log.i(TAG, "makeGraph()");
-        mNgv_graph =  new NotesGraphView(this);
+        mNgv_graph = new NotesGraphView(this);
         RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_main);
         RelativeLayout.LayoutParams lP = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         lP.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         mNgv_graph.setLayoutParams(lP);
         relativeLayout.addView(mNgv_graph);
+        mIv_button.bringToFront();
     }
 
 // Accessors/Mutators
