@@ -155,7 +155,7 @@ public class MainActivity extends Activity {
 
         if (mRecording) {
             Log.i(TAG, "mRecording");
-            ColorFilter filter = new LightingColorFilter(000000, Color.RED);
+            ColorFilter filter = new LightingColorFilter(000000, getResources().getColor(R.color.O_RED));
             mDr_readyButton.setColorFilter(filter);
             mIv_button.setImageDrawable(mDr_readyButton);
         } else {

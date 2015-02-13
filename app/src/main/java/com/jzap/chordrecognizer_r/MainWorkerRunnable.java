@@ -146,8 +146,8 @@ public class MainWorkerRunnable implements Runnable {
         testPaint.setTextSize(50);
         testPaint.setColor(Color.WHITE);
 
-        mCanvas.drawText(((AudioAnalysis) message.obj).getChord(), halfViewWidth, halfViewLength, testPaint);
-
+        // TODO : Make dynamic
+        mCanvas.drawText(((AudioAnalysis) message.obj).getChord(), halfViewWidth - 40 , halfViewLength, testPaint);
 
         mMainActivity.getmIv_button().setImageBitmap(mBmpLabeledButton);
     }

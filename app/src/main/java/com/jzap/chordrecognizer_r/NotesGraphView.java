@@ -8,6 +8,7 @@ import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
+import android.graphics.RectF;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -21,7 +22,8 @@ import android.view.WindowManager;
 public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final String TAG = "NotesGraphView";
-    private static final int BACKGROUND_COLOR = 0xFFA8DFF4;
+    private static final int BACKGROUND_COLOR = 0xFF33b5e6;
+    private static int mSpin;
 
     private boolean mEndRunnable;
 
@@ -40,9 +42,11 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
 
     private Canvas mCanvas;
 
-    private Point mButtonOrigin;
+    private Point mButtonCenter;
     private DisplayMetrics mDisplayMetrics;
     private int mHalfButtonWidth;
+    private int mHalfButtonHeight;
+    int[] mButtonOrigin = new int[2];
 
     private MainActivity mMainActivity;
 
@@ -50,6 +54,8 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         super(context);
 
         mMainActivity = (MainActivity) context;
+
+        mSpin = 0;
 
         mEndRunnable = false;
         setZOrderOnTop(false);
@@ -135,6 +141,7 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
                         }
                         mSurfaceHolder.unlockCanvasAndPost(mCanvas);
                         ProcessAudio.setmNewPCP(false);
+                        mSpin = mSpin + 10;
                     }
                 }
             }
@@ -166,10 +173,22 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         mPaint.setAntiAlias(true);
 
-        Vector2D side1 = new Vector2D(mButtonOrigin, scalePCPElement(mPCP[i]), (360/12)*(i));
-        Vector2D side2 = new Vector2D(mButtonOrigin, scalePCPElement(mPCP[i]), (360/12)*(i+1));
+        int startAngle = (360/12)*(i) + mSpin;
+        int endAngle = (360/12)*(i+1) + mSpin;
+        //int sweepAngle = 270; looks pretty cool
+        int sweepAngle = 30;
 
-        Point point1_draw = new Point(mButtonOrigin.x, mButtonOrigin.y);
+        Log.i(TAG, "startAngle1 = " + startAngle);
+
+        float length = (float) scalePCPElement(mPCP[i]);
+
+        Vector2D side1 = new Vector2D(mButtonCenter, length, startAngle);
+        Vector2D side2 = new Vector2D(mButtonCenter, length, endAngle);
+
+        Vector2D circumscribedRectLeftCorner = new Vector2D(mButtonCenter, length * (Math.sqrt(2.0)), 225);
+        Vector2D circumscribedRectRightCorner = new Vector2D(mButtonCenter, length * (Math.sqrt(2.0)), 45);
+
+        Point point1_draw = new Point(mButtonCenter.x, mButtonCenter.y);
         Point point2_draw = new Point(side1.getEndPoint().x, side1.getEndPoint().y);
         Point point3_draw = new Point(side2.getEndPoint().x, side2.getEndPoint().y);
 
@@ -177,10 +196,21 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         path.setFillType(Path.FillType.EVEN_ODD);
         path.moveTo(point1_draw.x,point1_draw.y);
         path.lineTo(point2_draw.x,point2_draw.y);
-        path.lineTo(point3_draw.x,point3_draw.y);
-        // TODO : Make arc
+
+        //startAngle = (int) (180 / Math.PI * Math.atan2(point2_draw.y - point1_draw.y, point2_draw.x - point1_draw.x));
+        Log.i(TAG, "startAngle2 = " + startAngle);
+       // RectF rect = new RectF(mButtonCenter.x + length, mButtonCenter.y + length, mButtonCenter.x - length, mButtonCenter.y - length);
+        RectF rect = new RectF(circumscribedRectLeftCorner.getEndPoint().x, circumscribedRectLeftCorner.getEndPoint().y, circumscribedRectRightCorner.getEndPoint().x, circumscribedRectRightCorner.getEndPoint().y);
+       // RectF rect = new RectF(point2_draw.x, point2_draw.y, point3_draw.x, point3_draw.y);
+      //  mPaint.setColor(0xEFFFFFFF);
+       // mCanvas.drawRect(rect, mPaint);
+        path.arcTo(rect, startAngle, sweepAngle);
+
+       // path.lineTo(point3_draw.x,point3_draw.y);
         path.lineTo(point1_draw.x,point1_draw.y);
         path.close();
+
+        mPaint.setColor(0xAAFFFFFF);
 
         mCanvas.drawPath(path, mPaint);
     }
@@ -193,15 +223,15 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         display.getMetrics(mDisplayMetrics);
 
         int[] mainLayoutOrigin= new int[2];
-        int[] buttonOrigin = new int[2];
+        mButtonOrigin = new int[2];
 
         mMainActivity.findViewById(R.id.rl_main).getLocationInWindow(mainLayoutOrigin);
-        mMainActivity.getmIv_button().getLocationInWindow(buttonOrigin);
+        mMainActivity.getmIv_button().getLocationInWindow(mButtonOrigin);
 
-        mHalfButtonWidth = mMainActivity.getmIv_button().getHeight()/2;
-        int halfButtonWidth = mMainActivity.getmIv_button().getWidth()/2;
+        mHalfButtonWidth =  mMainActivity.getmIv_button().getWidth()/2;
+        mHalfButtonHeight = mMainActivity.getmIv_button().getHeight()/2;
 
-        mButtonOrigin = new Point(buttonOrigin[0] - mainLayoutOrigin[0] + halfButtonWidth, buttonOrigin[1]-mainLayoutOrigin[1] + mHalfButtonWidth);
+        mButtonCenter = new Point(mButtonOrigin[0] - mainLayoutOrigin[0] + mHalfButtonHeight, mButtonOrigin[1]-mainLayoutOrigin[1] + mHalfButtonWidth);
     }
 
     private void drawBackground(boolean creatingThread) {
