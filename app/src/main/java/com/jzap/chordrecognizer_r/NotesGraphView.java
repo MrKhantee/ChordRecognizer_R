@@ -23,6 +23,15 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
 
     private static final String TAG = "NotesGraphView";
     private static final int BACKGROUND_COLOR = 0xFF33b5e6;
+    private static final int SPIN_INCREMENT = 1;
+    private static final double VOL_INC_SMOOTHING_FACTOR = 0.03; // was .008
+    private static final double VOL_DEC_SMOOTHING_FACTOR = 0.008;
+    private static int direction = -1;
+    private static double mNormVolume = 0;
+    private static double[] mNoteIntensities;
+
+
+
     private static int mSpin;
 
     private boolean mEndRunnable;
@@ -55,6 +64,7 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
 
         mMainActivity = (MainActivity) context;
 
+        mNoteIntensities = new double[12];
         mSpin = 0;
 
         mEndRunnable = false;
@@ -91,8 +101,9 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         mTRANSLUCENT_LIGHT_COLORS[4] = getResources().getColor(R.color.T_LIGHTRED);
 
         mPaint = new Paint();
-        mPaint.setStrokeWidth(10);
-        mPaint.setTextSize(60);
+        mPaint.setStrokeWidth(0);
+        mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        mPaint.setAntiAlias(true);
     }
 
     synchronized public void setmPCP(double[] PCP) {
@@ -101,11 +112,10 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
 
     synchronized public void setmAudioAnalysis(AudioAnalysis audioAnalysis) {
         mAudioAnalysis = audioAnalysis;
-        setmPCP(mAudioAnalysis.getPCP());
+        setmPCP(mAudioAnalysis.getmPCP());
     }
 
 // SurfaceHolder.Callback implementations
-
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         Log.i(TAG, "surfaceCreated");
@@ -126,22 +136,13 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
                         if (mPCP != null) {
                             setScreenMeasurements();
                             drawBackground(false);
+                            drawVolumeSector();
                             for (int i = 0; i < mPCP.length; i++) {
-                                if(mAudioAnalysis.getVolumeThresholdMet()) {
-                                    if(oneOfThreeMostIntenseNotes(i)) {
-                                        drawTriangles(i, true, true);
-                                    }
-                                    else {
-                                        drawTriangles(i, true, false);
-                                    }
-                                } else {
-                                    drawTriangles(i, false, false);
-                                }
+                                drawNoteSector(i);
                             }
                         }
                         mSurfaceHolder.unlockCanvasAndPost(mCanvas);
-                        ProcessAudio.setmNewPCP(false);
-                        mSpin = mSpin + 10;
+                        mSpin = mSpin + SPIN_INCREMENT;
                     }
                 }
             }
@@ -156,63 +157,117 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {}
 // End SurfaceHolder.Callback implementations
 
+    private void drawNoteSector(int i) {
+        mPaint.setColor(Color.WHITE);
+        mPaint.setAlpha((int)(mAudioAnalysis.getmPCP()[i]*255));
 
+        Path notePath = createSector(30, i);
+        mCanvas.drawPath(notePath, mPaint);
+    }
 
-    private void drawTriangles(int i, boolean volumeThresholdMet, boolean oneOfThreeMostIntenseNotes) {
-        mPaint.setStrokeWidth(5);
-        if (volumeThresholdMet) {
-            if (oneOfThreeMostIntenseNotes) {
-                mPaint.setColor(mOPAQUE_DARK_COLORS[i % 5]);
-            } else {
-                mPaint.setColor(mTRANSLUCENT_DARK_COLORS[i % 5]);
-            }
-        } else {
-            // TODO : You know what to do
-            mPaint.setColor(0xAAFFFFFF);
-        }
-        mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        mPaint.setAntiAlias(true);
+    private void drawVolumeSector() {
+        mPaint.setColor(0x33FFFFFF);
+        Path volumePath = createSector(90);
+        Path volumePath2 = createSector(300);
+        mCanvas.drawPath(volumePath, mPaint);
+        mCanvas.drawPath(volumePath2, mPaint);
+    }
 
-        int startAngle = (360/12)*(i) + mSpin;
-        int endAngle = (360/12)*(i+1) + mSpin;
-        //int sweepAngle = 270; looks pretty cool
-        int sweepAngle = 30;
+    // Used for note sectors
+    private Path createSector(int sweepAngle, int noteIndex) {
+        int startAngle = (360/12)*(noteIndex) + mSpin;
 
-        Log.i(TAG, "startAngle1 = " + startAngle);
+        // TODO : efficiency
+      //  float length = (float) scaleSectorLength(mPCP[noteIndex], scaleSectorLength(mAudioAnalysis.getNormMaxVolume(), 0));
+        float length = (float) scaleSectorLength(smoothNote(noteIndex), scaleSectorLength(mAudioAnalysis.getNormMaxVolume(), 0));
 
-        float length = (float) scalePCPElement(mPCP[i]);
-
-        Vector2D side1 = new Vector2D(mButtonCenter, length, startAngle);
-        Vector2D side2 = new Vector2D(mButtonCenter, length, endAngle);
+        Vector2D sectorSideStart = new Vector2D(mButtonCenter, length, startAngle);
 
         Vector2D circumscribedRectLeftCorner = new Vector2D(mButtonCenter, length * (Math.sqrt(2.0)), 225);
         Vector2D circumscribedRectRightCorner = new Vector2D(mButtonCenter, length * (Math.sqrt(2.0)), 45);
 
-        Point point1_draw = new Point(mButtonCenter.x, mButtonCenter.y);
-        Point point2_draw = new Point(side1.getEndPoint().x, side1.getEndPoint().y);
-        Point point3_draw = new Point(side2.getEndPoint().x, side2.getEndPoint().y);
+        Point centerPoint = new Point(mButtonCenter.x, mButtonCenter.y);
+        Point secondPoint = new Point(sectorSideStart.getEndPoint().x, sectorSideStart.getEndPoint().y);
 
         Path path = new Path();
         path.setFillType(Path.FillType.EVEN_ODD);
-        path.moveTo(point1_draw.x,point1_draw.y);
-        path.lineTo(point2_draw.x,point2_draw.y);
+        path.moveTo(centerPoint.x,centerPoint.y);
+        path.lineTo(secondPoint.x,secondPoint.y);
 
-        //startAngle = (int) (180 / Math.PI * Math.atan2(point2_draw.y - point1_draw.y, point2_draw.x - point1_draw.x));
-        Log.i(TAG, "startAngle2 = " + startAngle);
-       // RectF rect = new RectF(mButtonCenter.x + length, mButtonCenter.y + length, mButtonCenter.x - length, mButtonCenter.y - length);
         RectF rect = new RectF(circumscribedRectLeftCorner.getEndPoint().x, circumscribedRectLeftCorner.getEndPoint().y, circumscribedRectRightCorner.getEndPoint().x, circumscribedRectRightCorner.getEndPoint().y);
-       // RectF rect = new RectF(point2_draw.x, point2_draw.y, point3_draw.x, point3_draw.y);
-      //  mPaint.setColor(0xEFFFFFFF);
-       // mCanvas.drawRect(rect, mPaint);
         path.arcTo(rect, startAngle, sweepAngle);
 
-       // path.lineTo(point3_draw.x,point3_draw.y);
-        path.lineTo(point1_draw.x,point1_draw.y);
+        path.lineTo(centerPoint.x, centerPoint.y);
         path.close();
 
-        mPaint.setColor(0xAAFFFFFF);
+        return path;
+    }
 
-        mCanvas.drawPath(path, mPaint);
+    // Used for volume sectors
+    private Path createSector(int sweepAngle) {
+        int startAngle = (mSpin * 5) * direction;
+  
+        direction = direction * -1;
+
+        float length = (float) scaleSectorLength(smoothVolume(), 50);
+
+        Vector2D sectorSideStart = new Vector2D(mButtonCenter, length, startAngle);
+
+        Vector2D circumscribedRectLeftCorner = new Vector2D(mButtonCenter, length * (Math.sqrt(2.0)), 225);
+        Vector2D circumscribedRectRightCorner = new Vector2D(mButtonCenter, length * (Math.sqrt(2.0)), 45);
+
+        Point centerPoint = new Point(mButtonCenter.x, mButtonCenter.y);
+        Point secondPoint = new Point(sectorSideStart.getEndPoint().x, sectorSideStart.getEndPoint().y);
+
+        Path path = new Path();
+        path.setFillType(Path.FillType.EVEN_ODD);
+        path.moveTo(centerPoint.x,centerPoint.y);
+        path.lineTo(secondPoint.x,secondPoint.y);
+
+        RectF rect = new RectF(circumscribedRectLeftCorner.getEndPoint().x, circumscribedRectLeftCorner.getEndPoint().y, circumscribedRectRightCorner.getEndPoint().x, circumscribedRectRightCorner.getEndPoint().y);
+        path.arcTo(rect, startAngle, sweepAngle);
+
+        path.lineTo(centerPoint.x, centerPoint.y);
+        path.close();
+
+        return path;
+    }
+
+    /*
+    private double smoothVolume() {
+       // Log.i(TAG, "mNormVolume = " + String.valueOf(mNormVolume));
+       // Log.i(TAG, "audioAnalysisVolume  = " + String.valueOf(mAudioAnalysis.getNormMaxVolume()));
+        if(Math.abs(mNormVolume - mAudioAnalysis.getNormMaxVolume()) > VOL_SMOOTHING_FACTOR) {
+            mNormVolume = ((mNormVolume > mAudioAnalysis.getNormMaxVolume()) ? (mNormVolume - VOL_SMOOTHING_FACTOR) : (mNormVolume + VOL_SMOOTHING_FACTOR));
+        } else {
+            mNormVolume = mAudioAnalysis.getNormMaxVolume();
+        }
+       // Log.i(TAG, String.valueOf(mNormVolume));
+        return mNormVolume;
+    }
+*/
+    private double smoothVolume() {
+        // Log.i(TAG, "mNormVolume = " + String.valueOf(mNormVolume));
+        // Log.i(TAG, "audioAnalysisVolume  = " + String.valueOf(mAudioAnalysis.getNormMaxVolume()));
+        if(mNormVolume - mAudioAnalysis.getNormMaxVolume() > VOL_DEC_SMOOTHING_FACTOR) {
+            mNormVolume = mNormVolume - VOL_DEC_SMOOTHING_FACTOR;
+        } else if (mAudioAnalysis.getNormMaxVolume() - mNormVolume > VOL_INC_SMOOTHING_FACTOR) {
+            mNormVolume = mNormVolume + VOL_INC_SMOOTHING_FACTOR;
+        } else {
+            mNormVolume = mAudioAnalysis.getNormMaxVolume();
+        }
+        // Log.i(TAG, String.valueOf(mNormVolume));
+        return mNormVolume;
+    }
+
+    private double smoothNote(int index) {
+        if(Math.abs(mNoteIntensities[index] - mPCP[index]) > VOL_INC_SMOOTHING_FACTOR) {
+            mNoteIntensities[index] = ((mNoteIntensities[index] > mPCP[index]) ? (mNoteIntensities[index] - VOL_INC_SMOOTHING_FACTOR) : (mNoteIntensities[index] + VOL_INC_SMOOTHING_FACTOR));
+        } else {
+            mNoteIntensities[index] = mPCP[index];
+        }
+        // Log.i(TAG, String.valueOf(mNormVolume));
+        return mNoteIntensities[index];
     }
 
     private void setScreenMeasurements() {
@@ -250,12 +305,24 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         }
     }
 
-    double scalePCPElement(double elem) {
-        int viewBuffer = 20;
+    // Used for volume
+    double scaleSectorLength(double normIntensity, int buffer) {
+       // Log.i(TAG, String.valueOf(normIntensity));
+        int viewBuffer = 50 + buffer; // was 20
         int scaleMin = mHalfButtonWidth + viewBuffer;
         int scaleMax = mDisplayMetrics.widthPixels/2;
         int scaleRange = scaleMax - scaleMin;
-        double aboveScaleMin = elem * scaleRange;
+        double aboveScaleMin = normIntensity * scaleRange;
+        return scaleMin + aboveScaleMin;
+    }
+
+    // Used for note
+    double scaleSectorLength(double normIntensity, double max) {
+        int viewBuffer = 50;
+        int scaleMin = mHalfButtonWidth + viewBuffer;
+        double scaleMax = max;
+        double scaleRange = scaleMax - scaleMin;
+        double aboveScaleMin = normIntensity * scaleRange;
         return scaleMin + aboveScaleMin;
     }
 
@@ -265,9 +332,9 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
 
     private int[] indexesOfThreeMostIntenseNote() {
         int[] indexes = new int[3];
-        indexes[0] = noteToIndex(mAudioAnalysis.getMostIntenseNote());
-        indexes[1] = noteToIndex(mAudioAnalysis.getSeconMostIntenseNote());
-        indexes[2] = noteToIndex(mAudioAnalysis.getThirdMostIntenseNote());
+        indexes[0] = noteToIndex(mAudioAnalysis.getmMostIntenseNote());
+        indexes[1] = noteToIndex(mAudioAnalysis.getmSeconMostIntenseNote());
+        indexes[2] = noteToIndex(mAudioAnalysis.getmThirdMostIntenseNote());
         return indexes;
     }
 

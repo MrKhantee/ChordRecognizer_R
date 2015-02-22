@@ -6,49 +6,68 @@ package com.jzap.chordrecognizer_r;
 
 public class AudioAnalysis {
 
-    private String chord;
-    private String mostIntenseNote;
-    private String seconMostIntenseNote;
-    private String thirdMostIntenseNote;
-    private double[] PCP;
-    private boolean volumeThresholdMet;
+    private String mChord;
+    private String mMostIntenseNote;
+    private String mSeconMostIntenseNote;
+    private String mThirdMostIntenseNote;
+    private double[] mPCP;
+    private boolean mVolumeThresholdMet;
+    private int mMaxVolume;
+    private double mNormMaxVolume;
 
     // Accessors/Modifiers
-    public String getChord() {
-        return chord;
+    public String getmChord() {
+        return mChord;
     }
-    public String getMostIntenseNote() {
-        return mostIntenseNote;
+    public String getmMostIntenseNote() {
+        return mMostIntenseNote;
     }
-    public String getSeconMostIntenseNote() {
-        return seconMostIntenseNote;
+    public String getmSeconMostIntenseNote() {
+        return mSeconMostIntenseNote;
     }
-    public String getThirdMostIntenseNote() {
-        return thirdMostIntenseNote;
+    public String getmThirdMostIntenseNote() {
+        return mThirdMostIntenseNote;
     }
-    public double[] getPCP() {
-        return PCP;
+    public double[] getmPCP() {
+        return mPCP;
     }
-    public boolean getVolumeThresholdMet() {
-        return volumeThresholdMet;
+    public boolean getmVolumeThresholdMet() {
+        return mVolumeThresholdMet;
     }
-    public void setChord(String chord) {
-        this.chord = chord;
+    public int getmMaxVolume() { return mMaxVolume; }
+    public double getNormMaxVolume() {
+        double normMaxVolume;
+        if (getmVolumeThresholdMet()) {
+            mNormMaxVolume = 1;
+        }
+        else {
+            mNormMaxVolume = (double) getmMaxVolume() / (double) RecordAudio.VOLUME_THRESHOLD;
+        }
+        if(mNormMaxVolume > 1) {
+           mNormMaxVolume = 1;
+        }
+        return mNormMaxVolume;
     }
-    public void setMostIntenseNote(String mostIntenseNote) {
-        this.mostIntenseNote = mostIntenseNote;
+    public void setmChord(String mChord) {
+        this.mChord = mChord;
     }
-    public void setSeconMostIntenseNote(String seconMostIntenseNote) {
-        this.seconMostIntenseNote = seconMostIntenseNote;
+    public void setmMostIntenseNote(String mMostIntenseNote) {
+        this.mMostIntenseNote = mMostIntenseNote;
     }
-    public void setThirdMostIntenseNote(String thirdMostIntenseNote) {
-        this.thirdMostIntenseNote = thirdMostIntenseNote;
+    public void setmSeconMostIntenseNote(String mSeconMostIntenseNote) {
+        this.mSeconMostIntenseNote = mSeconMostIntenseNote;
     }
-    public void setPCP(double[] PCP) {
-        this.PCP = PCP;
+    public void setmThirdMostIntenseNote(String mThirdMostIntenseNote) {
+        this.mThirdMostIntenseNote = mThirdMostIntenseNote;
     }
-    public void setVolumeThresholdMet(boolean volumeThresholdMet) {
-        this.volumeThresholdMet = volumeThresholdMet;
+    public void setmPCP(double[] mPCP) {
+        this.mPCP = mPCP;
+    }
+    public void setmVolumeThresholdMet(boolean mVolumeThresholdMet) {
+        this.mVolumeThresholdMet = mVolumeThresholdMet;
+    }
+    public void setmMaxVolume(int mMaxVolume) {
+        this.mMaxVolume = mMaxVolume;
     }
     // End Accessors/Modifiers
 }

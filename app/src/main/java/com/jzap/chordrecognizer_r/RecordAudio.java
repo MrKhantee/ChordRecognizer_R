@@ -14,7 +14,7 @@ public class RecordAudio {
 
     private static final String TAG = "RecordAudio";
     public static final int VOLUME_THRESHOLD = 28000;
-    private static final int graphPCPInterval = 320;
+    private static final int GRAPH_PCP_INTERVAL = 80; // was 320
 
     private static int count = 1;
 
@@ -41,20 +41,22 @@ public class RecordAudio {
             recorder.read(testAudioInput, 0, testAudioInput.length);
             accumulateAudio(testAudioInput, cumulativeTestAudioInput);
             for(int i = 0; i < testAudioInput.length; i++) {
-                if(testAudioInput[i] > greatestSample) {
-                    greatestSample = testAudioInput[i];
+                if(Math.abs(testAudioInput[i]) > greatestSample) {
+                    greatestSample = Math.abs(testAudioInput[i]);
                 }
                 if(Math.abs(testAudioInput[i]) >= VOLUME_THRESHOLD) {
                     //Log.i(TAG, String.valueOf(greatestSample));
                     recorder.stop();
+                    // TODO : Don't just return true - Do Chord detection using the samples collected thus far, instead of throwing them out and wasting time re-recording.
+                    // TODO : Edit - this didn't seem feasible
                     return true;
                 }
             }//end for
             //Log.i(TAG, String.valueOf(greatestSample));
             showVolume(greatestSample);
 
-            if (count >= graphPCPInterval) {
-                new ProcessAudio(mMainActivity).detectChord(toPrimitive(cumulativeTestAudioInput), false);
+            if (count >= GRAPH_PCP_INTERVAL) {
+                new ProcessAudio(mMainActivity).detectChord(toPrimitive(cumulativeTestAudioInput), false, greatestSample);
                 cumulativeTestAudioInput = new ArrayList<Short>();
                 count = 0;
             }
@@ -66,13 +68,30 @@ public class RecordAudio {
         return false;
     }
 
-    public void accumulateAudio(short[] audio, List<Short> cumulativeAudio) {
+    public AudioAnalysis doChordDetection() {
+        // short audioInput[] = new short[32000];
+        short audioInput[] = new short[16000];
+        recorder.startRecording();
+        recorder.read(audioInput, 0, audioInput.length);
+        recorder.stop();
+        int greatestSample = 0;
+        for(int i = 0; i < audioInput.length; i++) {
+            if (audioInput[i] > greatestSample) {
+                greatestSample = audioInput[i];
+            }
+        }
+        // greatestSample is ignored when volume threshold is met, because since this sample is taken after
+        // the volume threshold was initially met, this value may different than volumeThreshold
+        return new ProcessAudio(mMainActivity).detectChord(audioInput, true, greatestSample);
+    }
+
+    private void accumulateAudio(short[] audio, List<Short> cumulativeAudio) {
         for(int i = 0; i < audio.length; i++) {
             cumulativeAudio.add(audio[i]);
         }
     }
 
-    public short[] toPrimitive(ArrayList<Short> theList) {
+    private short[] toPrimitive(ArrayList<Short> theList) {
         short[] result = new short[theList.size()];
         for(int i = 0; i < result.length; i++) {
             result[i] = theList.get(i);
@@ -80,20 +99,11 @@ public class RecordAudio {
         return result;
     }
 
-    public AudioAnalysis doChordDetection() {
-        short audioInput[] = new short[32000];
-        recorder.startRecording();
-        recorder.read(audioInput, 0, audioInput.length);
-        recorder.stop();
-
-        return new ProcessAudio(mMainActivity).detectChord(audioInput, true);
-    }
-
     public void destroyRecordAudio() {
         recorder.release();
     }
 
-    public void showVolume(int greatestSample) {
+     private void showVolume(int greatestSample) {
         Integer i;
         int quarterVolThrshld = VOLUME_THRESHOLD/4;
 

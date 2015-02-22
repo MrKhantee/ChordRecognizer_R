@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LightingColorFilter;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.Drawable;
@@ -89,10 +88,11 @@ public class MainWorkerRunnable implements Runnable {
                // This displays the results in plain text
                // mHandler.obtainMessage(DISPLAY_CHORDAL_NOTES_TEXT, audioAnalysis).sendToTarget();
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(2000);
                 } catch(InterruptedException e) {
                     e.printStackTrace();
-                }//end try/catch
+               }//end try/catch
+              // ProcessAudio.setmNewPCP(false);
             }//end if
         }//end while
         recordAudio.destroyRecordAudio();
@@ -127,7 +127,7 @@ public class MainWorkerRunnable implements Runnable {
 
     // TODO : Most of this is lifted from NotesGraphView, which is to be made into common method - use that method
     private void displayChord(Message message) {
-        int chordColor = lookupChordColor(((AudioAnalysis) message.obj).getChord());
+        int chordColor = lookupChordColor(((AudioAnalysis) message.obj).getmChord());
         mButtonPaint.setColorFilter(new LightingColorFilter(010101, chordColor));
         mCanvas.drawBitmap(mBmpButton, 0, 0, mButtonPaint);
 
@@ -147,16 +147,16 @@ public class MainWorkerRunnable implements Runnable {
         testPaint.setColor(Color.WHITE);
 
         // TODO : Make dynamic
-        mCanvas.drawText(((AudioAnalysis) message.obj).getChord(), halfViewWidth - 40 , halfViewLength, testPaint);
+        mCanvas.drawText(((AudioAnalysis) message.obj).getmChord(), halfViewWidth - 40 , halfViewLength, testPaint);
 
         mMainActivity.getmIv_button().setImageBitmap(mBmpLabeledButton);
     }
 
     private void displayChordalNotesText(Message message) {
-        mMainActivity.getmTv_chord().setText(((AudioAnalysis) message.obj).getChord());
-        mMainActivity.getmTv_mostIntenseNote().setText(((AudioAnalysis) message.obj).getMostIntenseNote());
-        mMainActivity.getmTv_secMostIntenseNote().setText(((AudioAnalysis) message.obj).getSeconMostIntenseNote());
-        mMainActivity.getmTv_thirdMostIntenseNote().setText(((AudioAnalysis) message.obj).getThirdMostIntenseNote());
+        mMainActivity.getmTv_chord().setText(((AudioAnalysis) message.obj).getmChord());
+        mMainActivity.getmTv_mostIntenseNote().setText(((AudioAnalysis) message.obj).getmMostIntenseNote());
+        mMainActivity.getmTv_secMostIntenseNote().setText(((AudioAnalysis) message.obj).getmSeconMostIntenseNote());
+        mMainActivity.getmTv_thirdMostIntenseNote().setText(((AudioAnalysis) message.obj).getmThirdMostIntenseNote());
     }
 
     private void displayVolumeState(Message message) {
