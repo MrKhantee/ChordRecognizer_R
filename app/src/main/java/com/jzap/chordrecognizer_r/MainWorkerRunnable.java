@@ -82,6 +82,7 @@ public class MainWorkerRunnable implements Runnable {
         // Consider killing thread when record button is shut off, and restarting when turned back on (May save battery, may be good practice...)
         while(!mEndRunnable) {
             if(mMainActivity.getmRecording() && recordAudio.volumeThresholdMet() ) {
+
                 // There's a tradeoff in getting the audioAnalysis here, instead of after the next line - app seems less responsive
                 audioAnalysis = recordAudio.doChordDetection();
                 mHandler.obtainMessage(DISPLAY_CHORD, audioAnalysis).sendToTarget();
@@ -91,7 +92,7 @@ public class MainWorkerRunnable implements Runnable {
                     Thread.sleep(2000);
                 } catch(InterruptedException e) {
                     e.printStackTrace();
-               }//end try/catch
+                }//end try/catch
               // ProcessAudio.setmNewPCP(false);
             }//end if
         }//end while
@@ -128,8 +129,8 @@ public class MainWorkerRunnable implements Runnable {
     // TODO : Most of this is lifted from NotesGraphView, which is to be made into common method - use that method
     private void displayChord(Message message) {
         int chordColor = lookupChordColor(((AudioAnalysis) message.obj).getmChord());
-        mButtonPaint.setColorFilter(new LightingColorFilter(010101, chordColor));
-        mCanvas.drawBitmap(mBmpButton, 0, 0, mButtonPaint);
+       // mButtonPaint.setColorFilter(new LightingColorFilter(010101, chordColor));
+      //  mCanvas.drawBitmap(mBmpButton, 0, 0, mButtonPaint);
 
         int[] origin11 = new int[2];
         int[] origin2 = new int[2];
@@ -149,7 +150,7 @@ public class MainWorkerRunnable implements Runnable {
         // TODO : Make dynamic
         mCanvas.drawText(((AudioAnalysis) message.obj).getmChord(), halfViewWidth - 40 , halfViewLength, testPaint);
 
-        mMainActivity.getmIv_button().setImageBitmap(mBmpLabeledButton);
+      //  mMainActivity.getmIv_button().setImageBitmap(mBmpLabeledButton);
     }
 
     private void displayChordalNotesText(Message message) {

@@ -103,10 +103,10 @@ public class MainActivity extends Activity {
         // TODO : Are these different buttons still necessary?
         mIv_button = (ImageView) findViewById(R.id.button);
         mDr_button = getResources().getDrawable(R.drawable.button);
-        mDr_readyButton = getResources().getDrawable(R.drawable.button);
+        mDr_readyButton = getResources().getDrawable(R.drawable.buttonstart);
         //mNgv_graph =  new NotesGraphView(this);
 
-        mRecording = false;
+        mRecording = true;
 
         mWorkerRunnable = new MainWorkerRunnable(this);
     }
@@ -155,14 +155,10 @@ public class MainActivity extends Activity {
 
         if (mRecording) {
             Log.i(TAG, "mRecording");
-            ColorFilter filter = new LightingColorFilter(000000, getResources().getColor(R.color.O_RED));
-            mDr_readyButton.setColorFilter(filter);
-            mIv_button.setImageDrawable(mDr_readyButton);
+            mIv_button.setImageDrawable(mDr_button);
         } else {
             Log.i(TAG, "!mRecording");
-            ColorFilter filter = new LightingColorFilter(000000, 0xFFededed);
-            mDr_button.setColorFilter(filter);
-            mIv_button.setImageDrawable(mDr_button);
+            mIv_button.setImageDrawable(mDr_readyButton);
         }
     }
 

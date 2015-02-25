@@ -69,5 +69,8 @@ public class AudioAnalysis {
     public void setmMaxVolume(int mMaxVolume) {
         this.mMaxVolume = mMaxVolume;
     }
+    public void setmNormMaxVolume(int volume) {
+        mNormMaxVolume = volume;
+    }
     // End Accessors/Modifiers
 }

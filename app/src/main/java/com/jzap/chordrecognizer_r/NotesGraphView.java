@@ -22,7 +22,8 @@ import android.view.WindowManager;
 public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final String TAG = "NotesGraphView";
-    private static final int BACKGROUND_COLOR = 0xFF33b5e6;
+   //private static final int BACKGROUND_COLOR = 0xFF33b5e6;
+    private static final int BACKGROUND_COLOR = 0xFF33bcd4;
     private static final int SPIN_INCREMENT = 1;
     private static final double VOL_INC_SMOOTHING_FACTOR = 0.03; // was .008
     private static final double VOL_DEC_SMOOTHING_FACTOR = 0.008;
@@ -30,14 +31,15 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
     private static double mNormVolume = 0;
     private static double[] mNoteIntensities;
 
-
-
     private static int mSpin;
 
     private boolean mEndRunnable;
 
+    private boolean mAudioAnalysisUpdate;
+
     private AudioAnalysis mAudioAnalysis;
     private double[] mPCP;
+    private boolean mVolumeThresholdMet;
 
     private SurfaceHolder mSurfaceHolder;
 
@@ -57,6 +59,8 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
     private int mHalfButtonHeight;
     int[] mButtonOrigin = new int[2];
 
+    private String mLastChord;
+
     private MainActivity mMainActivity;
 
     public NotesGraphView (android.content.Context context) {
@@ -75,6 +79,7 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         mSurfaceHolder = getHolder();
         mSurfaceHolder.addCallback(this);
         mSurfaceHolder.setFormat(PixelFormat.TRANSPARENT);
+        mLastChord = "CHORD";
 
         mOPAQUE_DARK_COLORS[0] = getResources().getColor(R.color.O_BLUE);
         mOPAQUE_DARK_COLORS[1] = getResources().getColor(R.color.O_PURPLE);
@@ -111,6 +116,7 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
     }
 
     synchronized public void setmAudioAnalysis(AudioAnalysis audioAnalysis) {
+        mAudioAnalysisUpdate = true;
         mAudioAnalysis = audioAnalysis;
         setmPCP(mAudioAnalysis.getmPCP());
     }
@@ -128,8 +134,14 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
             @Override
             public void run() {
                 while (!mEndRunnable) {
-                    // Log.i(TAG, "Running...");
-                    if (ProcessAudio.getmNewPCP()) {
+                    if (ProcessAudio.getmNewPCP() || mVolumeThresholdMet) {
+                        if(mVolumeThresholdMet) {
+                            if(mAudioAnalysisUpdate) {
+                                mVolumeThresholdMet = false;
+                            }
+                        }
+                        mAudioAnalysisUpdate = false;
+                        mAudioAnalysisUpdate = false;
                         mCanvas = null;
                         mCanvas = mSurfaceHolder.lockCanvas();
                         mCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
@@ -140,6 +152,10 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
                             for (int i = 0; i < mPCP.length; i++) {
                                 drawNoteSector(i);
                             }
+                            if(mAudioAnalysis.getmChord() != null && !mAudioAnalysis.getmChord().isEmpty()) {
+                                mLastChord = mAudioAnalysis.getmChord();
+                            }
+                            drawChordName();
                         }
                         mSurfaceHolder.unlockCanvasAndPost(mCanvas);
                         mSpin = mSpin + SPIN_INCREMENT;
@@ -179,6 +195,7 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
 
         // TODO : efficiency
       //  float length = (float) scaleSectorLength(mPCP[noteIndex], scaleSectorLength(mAudioAnalysis.getNormMaxVolume(), 0));
+
         float length = (float) scaleSectorLength(smoothNote(noteIndex), scaleSectorLength(mAudioAnalysis.getNormMaxVolume(), 0));
 
         Vector2D sectorSideStart = new Vector2D(mButtonCenter, length, startAngle);
@@ -209,7 +226,9 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
   
         direction = direction * -1;
 
-        float length = (float) scaleSectorLength(smoothVolume(), 50);
+        float length;
+
+        length = (float) scaleSectorLength(smoothVolume(), 50);
 
         Vector2D sectorSideStart = new Vector2D(mButtonCenter, length, startAngle);
 
@@ -233,28 +252,22 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         return path;
     }
 
-    /*
-    private double smoothVolume() {
-       // Log.i(TAG, "mNormVolume = " + String.valueOf(mNormVolume));
-       // Log.i(TAG, "audioAnalysisVolume  = " + String.valueOf(mAudioAnalysis.getNormMaxVolume()));
-        if(Math.abs(mNormVolume - mAudioAnalysis.getNormMaxVolume()) > VOL_SMOOTHING_FACTOR) {
-            mNormVolume = ((mNormVolume > mAudioAnalysis.getNormMaxVolume()) ? (mNormVolume - VOL_SMOOTHING_FACTOR) : (mNormVolume + VOL_SMOOTHING_FACTOR));
-        } else {
-            mNormVolume = mAudioAnalysis.getNormMaxVolume();
-        }
-       // Log.i(TAG, String.valueOf(mNormVolume));
-        return mNormVolume;
-    }
-*/
     private double smoothVolume() {
         // Log.i(TAG, "mNormVolume = " + String.valueOf(mNormVolume));
         // Log.i(TAG, "audioAnalysisVolume  = " + String.valueOf(mAudioAnalysis.getNormMaxVolume()));
-        if(mNormVolume - mAudioAnalysis.getNormMaxVolume() > VOL_DEC_SMOOTHING_FACTOR) {
-            mNormVolume = mNormVolume - VOL_DEC_SMOOTHING_FACTOR;
-        } else if (mAudioAnalysis.getNormMaxVolume() - mNormVolume > VOL_INC_SMOOTHING_FACTOR) {
-            mNormVolume = mNormVolume + VOL_INC_SMOOTHING_FACTOR;
+        if(mVolumeThresholdMet) {
+             mNormVolume = mNormVolume + VOL_INC_SMOOTHING_FACTOR;
         } else {
-            mNormVolume = mAudioAnalysis.getNormMaxVolume();
+            if (mNormVolume - mAudioAnalysis.getNormMaxVolume() > VOL_DEC_SMOOTHING_FACTOR) {
+                mNormVolume = mNormVolume - VOL_DEC_SMOOTHING_FACTOR;
+            } else if (mAudioAnalysis.getNormMaxVolume() - mNormVolume > VOL_INC_SMOOTHING_FACTOR) {
+                mNormVolume = mNormVolume + VOL_INC_SMOOTHING_FACTOR;
+            } else {
+                mNormVolume = mAudioAnalysis.getNormMaxVolume();
+            }
+        }
+        if(mNormVolume > 1) {
+            mNormVolume = 1;
         }
         // Log.i(TAG, String.valueOf(mNormVolume));
         return mNormVolume;
@@ -268,6 +281,18 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         }
         // Log.i(TAG, String.valueOf(mNormVolume));
         return mNoteIntensities[index];
+    }
+
+    private void drawChordName() {
+        Paint testPaint;
+        testPaint = new Paint();
+        testPaint.setStrokeWidth(10);
+        // TODO : Make dynamic
+        testPaint.setTextSize(50);
+        testPaint.setColor(Color.WHITE);
+
+        // TODO : Make dynamic
+        mCanvas.drawText(mLastChord, 30 , mButtonCenter.y, testPaint);
     }
 
     private void setScreenMeasurements() {
@@ -294,11 +319,26 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
             mCanvas = mSurfaceHolder.lockCanvas();
         }
 
+        // TODO : Make member variables, redundant
         Paint backgroundPaint = new Paint();
         backgroundPaint.setColor(BACKGROUND_COLOR);
         backgroundPaint.setStyle(Paint.Style.FILL);
 
-        mCanvas.drawRect(0, 0, mDisplayMetrics.widthPixels, mDisplayMetrics.heightPixels, backgroundPaint);
+        Paint backgroundPaint2 = new Paint();
+        //backgroundPaint2.setColor(Color.LTGRAY);
+        backgroundPaint2.setColor(0xFFc48bc9);//
+        backgroundPaint2.setColor(0xFFf26d7d);
+        backgroundPaint2.setStyle(Paint.Style.FILL);
+
+        mCanvas.drawRect(0, 0, mDisplayMetrics.widthPixels, mButtonCenter.y, backgroundPaint2);
+        mCanvas.drawRect(mDisplayMetrics.widthPixels,  mButtonCenter.y, 0, mDisplayMetrics.heightPixels, backgroundPaint);
+
+       // backgroundPaint.setColor(0xFF94549a);
+       // backgroundPaint2.setColor(0xFF0d7984);
+       // mCanvas.drawRect(0, 0, mDisplayMetrics.widthPixels, 100, backgroundPaint);
+     //   mCanvas.drawRect(0, mDisplayMetrics.heightPixels - 200, mDisplayMetrics.widthPixels, mDisplayMetrics.heightPixels, backgroundPaint2);
+      //  mCanvas.drawRect(mDisplayMetrics.widthPixels, 100, 0, 0, backgroundPaint);
+
         if(creatingThread) {
             setBackgroundColor(Color.TRANSPARENT);
             mSurfaceHolder.unlockCanvasAndPost(mCanvas);
@@ -345,6 +385,11 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         }
         return false;
     }
+
+    public void setmVolumeThresholdMet(boolean volumeThresholdMet) {
+        mVolumeThresholdMet = volumeThresholdMet;
+    }
+
 
     private int noteToIndex(String note) {
         if(note.equalsIgnoreCase("C")) {

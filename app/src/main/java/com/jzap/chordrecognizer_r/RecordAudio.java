@@ -47,6 +47,7 @@ public class RecordAudio {
                 if(Math.abs(testAudioInput[i]) >= VOLUME_THRESHOLD) {
                     //Log.i(TAG, String.valueOf(greatestSample));
                     recorder.stop();
+                    mMainActivity.getmNgv_graph().setmVolumeThresholdMet(true);
                     // TODO : Don't just return true - Do Chord detection using the samples collected thus far, instead of throwing them out and wasting time re-recording.
                     // TODO : Edit - this didn't seem feasible
                     return true;
