@@ -247,7 +247,6 @@ public class ProcessPCP {
 				break;
 			case 27: chord = "B7";
 				break;
-				
 
 			// # Major
  			case 28: chord = "C#Maj";

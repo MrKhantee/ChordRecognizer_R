@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="GRAY">#FFEDEDED</color>
+    <color name="LIGHTGRAY">#3FEDEDED</color>
+
+    <color name="O_BLUE">#FF33b5e6</color>
+    <color name="O_PURPLE">#FFaa66cd</color>
+    <color name="O_ORANGE">#FFffbb34</color>
+    <color name="O_GREEN">#FF98cb00</color>
+    <color name="O_RED">#FFff4443</color>
+
+    <color name="O_LIGHTBLUE">#1F33B5E6</color>
+    <color name="O_LIGHTPURPLE">#1FAA66CD</color>
+    <color name="O_LIGHTORANGE">#1FFFBB34</color>
+    <color name="O_LIGHTGREEN">#1F98CB00</color>
+    <color name="O_LIGHTRED">#1FFF4443</color>
+
+    <color name="T_BLUE">#0F33B5E6</color>
+    <color name="T_PURPLE">#0FAA66CD</color>
+    <color name="T_ORANGE">#0FFFBB34</color>
+    <color name="T_GREEN">#0F98CB00</color>
+    <color name="T_RED">#0FFF4443</color>
+
+    <color name="T_LIGHTBLUE">#0433B5E6</color>
+    <color name="T_LIGHTPURPLE">#04AA66CD</color>
+    <color name="T_LIGHTORANGE">#04FFBB34</color>
+    <color name="T_LIGHTGREEN">#0498CB00</color>
+    <color name="T_LIGHTRED">#04FFF443</color>
+</resources>

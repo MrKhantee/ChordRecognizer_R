@@ -194,7 +194,7 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
         int startAngle = (360/12)*(noteIndex) + mSpin;
 
         // TODO : efficiency
-      //  float length = (float) scaleSectorLength(mPCP[noteIndex], scaleSectorLength(mAudioAnalysis.getNormMaxVolume(), 0));
+        // float length = (float) scaleSectorLength(mPCP[noteIndex], scaleSectorLength(mAudioAnalysis.getNormMaxVolume(), 0));
 
         float length = (float) scaleSectorLength(smoothNote(noteIndex), scaleSectorLength(mAudioAnalysis.getNormMaxVolume(), 0));
 
@@ -336,8 +336,8 @@ public class NotesGraphView extends SurfaceView implements SurfaceHolder.Callbac
        // backgroundPaint.setColor(0xFF94549a);
        // backgroundPaint2.setColor(0xFF0d7984);
        // mCanvas.drawRect(0, 0, mDisplayMetrics.widthPixels, 100, backgroundPaint);
-     //   mCanvas.drawRect(0, mDisplayMetrics.heightPixels - 200, mDisplayMetrics.widthPixels, mDisplayMetrics.heightPixels, backgroundPaint2);
-      //  mCanvas.drawRect(mDisplayMetrics.widthPixels, 100, 0, 0, backgroundPaint);
+       // mCanvas.drawRect(0, mDisplayMetrics.heightPixels - 200, mDisplayMetrics.widthPixels, mDisplayMetrics.heightPixels, backgroundPaint2);
+       // mCanvas.drawRect(mDisplayMetrics.widthPixels, 100, 0, 0, backgroundPaint);
 
         if(creatingThread) {
             setBackgroundColor(Color.TRANSPARENT);
